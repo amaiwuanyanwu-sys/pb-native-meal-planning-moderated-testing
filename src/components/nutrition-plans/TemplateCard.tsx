@@ -14,9 +14,9 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
   imageUrl
 }) => {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
-      {/* Image Grid - 2x2 placeholder */}
-      <div className="aspect-[4/3] bg-gray-100 grid grid-cols-2 gap-0.5 p-0.5">
+    <div className="bg-white rounded-lg border border-[#DFE3E4] overflow-hidden hover:shadow-md transition-shadow cursor-pointer flex-1 min-w-62.5">
+      {/* Image Grid - 2x2 */}
+      <div className="h-43 border-b border-[#DFE3E4] grid grid-cols-2 grid-rows-2 overflow-hidden">
         {imageUrl ? (
           <img src={imageUrl} alt={title} className="w-full h-full object-cover col-span-2 row-span-2" />
         ) : (
@@ -31,17 +31,17 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
 
       {/* Content */}
       <div className="p-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-2">
+        <h3 className="text-base font-semibold text-[#244348] mb-1 leading-normal">
           {title}
         </h3>
-        <div className="flex items-center gap-3 text-xs text-gray-600">
-          <div className="flex items-center gap-1">
-            <span className="material-icons text-sm">event</span>
-            <span>{duration}</span>
+        <div className="flex items-center gap-2 text-xs font-medium text-[#657A7E]">
+          <div className="flex items-center gap-0.5">
+            <span className="material-icons text-[16px]">event</span>
+            <span className="leading-normal">{duration}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="material-icons text-sm">restaurant</span>
-            <span>{recipeCount} recipes</span>
+          <div className="flex items-center gap-0.5">
+            <span className="material-icons text-[16px]">restaurant</span>
+            <span className="leading-normal">{recipeCount} recipes</span>
           </div>
         </div>
       </div>

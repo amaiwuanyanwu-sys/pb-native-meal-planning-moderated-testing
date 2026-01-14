@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/Button';
+import nutritionIllustration from '@/assets/nutriton.svg';
 
 interface Feature {
   icon: string;
@@ -27,51 +28,40 @@ const features: Feature[] = [
 
 export const EmptyStateCard: React.FC = () => {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-8">
-      <div className="flex items-start gap-6">
+    <div className="bg-white rounded-lg border border-[#C1C9CB] overflow-hidden">
+      {/* Header */}
+      <div className="bg-white border-b border-[#DFE3E4] px-4 py-2 h-14 flex items-center">
+        <div className="flex items-center gap-2">
+          <span className="material-icons text-[#244348] text-2xl">grid_view</span>
+          <h2 className="text-sm font-semibold text-[#244348]">
+            Create your first nutrition plan
+          </h2>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="bg-white px-4 py-4 flex items-center gap-6">
         {/* Illustration */}
-        <div className="flex-shrink-0">
-          <div className="w-32 h-32 relative">
-            {/* Colorful food icons illustration */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Orange/peach circle */}
-                <circle cx="35" cy="30" r="22" fill="#FFA07A" opacity="0.9" />
-                {/* Green circle */}
-                <circle cx="70" cy="35" r="18" fill="#90EE90" opacity="0.9" />
-                {/* White/cream circle with dot */}
-                <circle cx="60" cy="60" r="20" fill="#F5F5DC" opacity="0.9" />
-                <circle cx="60" cy="60" r="8" fill="#FFFFFF" />
-                {/* Yellow circle */}
-                <circle cx="35" cy="75" r="20" fill="#FFD700" opacity="0.9" />
-                {/* Orange slice shape */}
-                <circle cx="75" cy="75" r="18" fill="#FF8C00" opacity="0.9" />
-                {/* Add some details to orange */}
-                <path d="M75 57 L75 93 M63 69 L87 69 M68 63 L82 81 M68 81 L82 63" stroke="#FFFFFF" strokeWidth="2" opacity="0.5" />
-              </svg>
-            </div>
+        <div className="shrink-0">
+          <div className="w-32 h-50 flex items-center justify-center">
+            <img src={nutritionIllustration} alt="Nutrition plan illustration" className="w-full h-full object-contain" />
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-6">
-            <span className="material-icons text-gray-700">grid_view</span>
-            <h2 className="text-lg font-semibold text-gray-900">
-              Create your first nutrition plan
-            </h2>
-          </div>
-
+        <div className="flex-1 flex flex-col gap-3">
           {/* Features */}
-          <div className="space-y-4 mb-6">
+          <div className="flex flex-col">
             {features.map((feature, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <span className="material-icons text-gray-700 text-xl">{feature.icon}</span>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-0.5">
+              <div key={index} className="flex items-center gap-3 py-2">
+                <div className="bg-[#F0F2F3] p-2 rounded flex items-center justify-center w-10 h-10 shrink-0">
+                  <span className="material-icons text-[#244348] text-2xl">{feature.icon}</span>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-[#244348] leading-[1.4]">
                     {feature.title}
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs font-medium text-[#657A7E] leading-normal">
                     {feature.description}
                   </p>
                 </div>
@@ -80,7 +70,7 @@ export const EmptyStateCard: React.FC = () => {
           </div>
 
           {/* CTA Button */}
-          <Button variant="primary" size="lg" className="w-full">
+          <Button variant="primary" size="lg" className="w-full h-10">
             Get started
           </Button>
         </div>
