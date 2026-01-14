@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { LeftSideRail } from '@/components/layout/LeftSideRail';
 import { EmptyStateCard } from '@/components/nutrition-plans/EmptyStateCard';
 import { TemplateCard } from '@/components/nutrition-plans/TemplateCard';
 import { Button } from '@/components/ui/Button';
@@ -26,10 +27,23 @@ const templates = [
 ];
 
 const NutritionPlans: React.FC = () => {
+  const [recentItems, setRecentItems] = React.useState<Array<{ id: string; label: string; path: string }>>([]);
+
+  const handleRecentItemClick = (item: { id: string; label: string; path: string }) => {
+    // Handle recent item click if needed
+    console.log('Recent item clicked:', item);
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <Sidebar />
+
+      {/* Left Side Rail */}
+      <LeftSideRail
+        recentItems={recentItems}
+        onRecentItemClick={handleRecentItemClick}
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
