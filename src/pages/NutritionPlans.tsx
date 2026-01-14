@@ -1,6 +1,5 @@
 import React from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { TopNav } from '@/components/layout/TopNav';
 import { EmptyStateCard } from '@/components/nutrition-plans/EmptyStateCard';
 import { TemplateCard } from '@/components/nutrition-plans/TemplateCard';
 import { Button } from '@/components/ui/Button';
@@ -34,9 +33,6 @@ const NutritionPlans: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Navigation */}
-        <TopNav />
-
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto p-6">
