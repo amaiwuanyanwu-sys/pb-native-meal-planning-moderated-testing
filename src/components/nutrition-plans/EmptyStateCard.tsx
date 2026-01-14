@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import nutritionIllustration from '@/assets/nutriton.svg';
 
@@ -27,6 +28,12 @@ const features: Feature[] = [
 ];
 
 export const EmptyStateCard: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/wizard/step-1');
+  };
+
   return (
     <div className="bg-white rounded-lg border border-[#C1C9CB] overflow-hidden">
       {/* Header */}
@@ -70,7 +77,7 @@ export const EmptyStateCard: React.FC = () => {
           </div>
 
           {/* CTA Button */}
-          <Button variant="primary" size="lg" className="w-full h-10">
+          <Button variant="primary" size="lg" className="w-full h-10" onClick={handleGetStarted}>
             Get started
           </Button>
         </div>
