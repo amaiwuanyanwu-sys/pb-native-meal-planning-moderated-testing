@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 interface TooltipProps {
   content: string;
   children: React.ReactNode;
+  position?: 'left' | 'right';
 }
 
-export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
+export const Tooltip: React.FC<TooltipProps> = ({ content, children, position = 'right' }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   return (
@@ -19,10 +20,9 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
         <div
           style={{
             position: 'absolute',
-            left: '100%',
+            ...(position === 'right' ? { left: '100%', marginLeft: '8px' } : { right: '100%', marginRight: '8px' }),
             top: '50%',
             transform: 'translateY(-50%)',
-            marginLeft: '8px',
             padding: '4px 8px',
             background: '#244348',
             color: 'white',
@@ -37,14 +37,17 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
           <div
             style={{
               position: 'absolute',
-              right: '100%',
+              ...(position === 'right' ? { right: '100%' } : { left: '100%' }),
               top: '50%',
               transform: 'translateY(-50%)',
               width: 0,
               height: 0,
               borderTop: '4px solid transparent',
               borderBottom: '4px solid transparent',
-              borderRight: '4px solid #244348'
+              ...(position === 'right'
+                ? { borderRight: '4px solid #244348' }
+                : { borderLeft: '4px solid #244348' }
+              )
             }}
           />
         </div>

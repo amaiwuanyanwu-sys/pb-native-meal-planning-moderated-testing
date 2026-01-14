@@ -6,6 +6,7 @@ interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
   size?: 'sm' | 'md' | 'lg';
   icon: React.ReactNode;
   tooltip?: string;
+  tooltipPosition?: 'top' | 'bottom' | 'left' | 'right';
 }
 
 export const IconButton: React.FC<IconButtonProps> = ({
@@ -13,6 +14,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
   size = 'md',
   icon,
   tooltip,
+  tooltipPosition = 'top',
   className,
   ...props
 }) => {
@@ -49,9 +51,22 @@ export const IconButton: React.FC<IconButtonProps> = ({
       </button>
 
       {tooltip && isTooltipVisible && (
-        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-[#244348] text-white text-xs rounded whitespace-nowrap z-50 pointer-events-none">
+        <div className={cn(
+          "absolute px-2 py-1 bg-[#244348] text-white text-xs rounded whitespace-nowrap z-50 pointer-events-none",
+          tooltipPosition === 'top' && "left-1/2 -translate-x-1/2 bottom-full mb-2",
+          tooltipPosition === 'bottom' && "left-1/2 -translate-x-1/2 top-full mt-2",
+          tooltipPosition === 'left' && "right-full top-1/2 -translate-y-1/2 mr-2",
+          tooltipPosition === 'right' && "left-full top-1/2 -translate-y-1/2 ml-2"
+        )}>
           {tooltip}
-          <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#244348]" />
+          {/* Arrow */}
+          <div className={cn(
+            "absolute w-0 h-0",
+            tooltipPosition === 'top' && "left-1/2 -translate-x-1/2 top-full border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-[#244348]",
+            tooltipPosition === 'bottom' && "left-1/2 -translate-x-1/2 bottom-full border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-[#244348]",
+            tooltipPosition === 'left' && "left-full top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-l-4 border-t-transparent border-b-transparent border-l-[#244348]",
+            tooltipPosition === 'right' && "right-full top-1/2 -translate-y-1/2 border-t-4 border-b-4 border-r-4 border-t-transparent border-b-transparent border-r-[#244348]"
+          )} />
         </div>
       )}
     </div>

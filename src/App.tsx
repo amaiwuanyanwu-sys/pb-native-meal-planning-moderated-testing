@@ -6,6 +6,7 @@ import NutritionPlans from './pages/NutritionPlans'
 import Step1NutritionGoals from './pages/wizard/Step1NutritionGoals'
 import Step2FoodPreferences from './pages/wizard/Step2FoodPreferences'
 import Step3AllergensExclusions from './pages/wizard/Step3AllergensExclusions'
+import Step4ChooseRecipes from './pages/wizard/Step4ChooseRecipes'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/wizard/step-1" element={<Step1NutritionGoals />} />
         <Route path="/wizard/step-2" element={<Step2FoodPreferences />} />
         <Route path="/wizard/step-3" element={<Step3AllergensExclusions />} />
+        <Route path="/wizard/step-4" element={<Step4ChooseRecipes />} />
         <Route path="/nutrition-plans" element={<NutritionPlans />} />
         <Route path="/plans" element={<Plans />} />
         <Route path="/plans/:planId/planner" element={<Planner />} />

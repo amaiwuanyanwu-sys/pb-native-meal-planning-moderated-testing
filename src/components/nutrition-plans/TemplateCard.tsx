@@ -36,11 +36,11 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({
         </h3>
         <div className="flex items-center gap-2 text-xs font-medium text-[#657A7E]">
           <div className="flex items-center gap-0.5">
-            <span className="material-icons text-[16px]">event</span>
+            <span className="material-icons" style={{ fontSize: '16px' }}>event</span>
             <span className="leading-normal">{duration}</span>
           </div>
           <div className="flex items-center gap-0.5">
-            <span className="material-icons text-[16px]">restaurant</span>
+            <span className="material-icons" style={{ fontSize: '16px' }}>restaurant</span>
             <span className="leading-normal">{recipeCount} recipes</span>
           </div>
         </div>

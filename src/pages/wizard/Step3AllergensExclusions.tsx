@@ -4,7 +4,7 @@ import { MagicWandIcon } from '@/components/icons/MagicWandIcon';
 import { IconButton } from '@/components/ui/IconButton';
 import { Tabs } from '@/components/ui/Tabs';
 import { Chip } from '@/components/ui/Chip';
-import { Search } from '@/components/ui/Search';
+import { SearchDropdown } from '@/components/ui/SearchDropdown';
 
 const allergens = ['Dairy', 'Alliums', 'Tree nuts', 'Fish', 'Soy', 'Meat', 'Onions', 'Leeks'];
 
@@ -12,7 +12,6 @@ const Step3AllergensExclusions: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('search');
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [describeText, setDescribeText] = useState('');
 
   const tabs = [
@@ -57,9 +56,9 @@ const Step3AllergensExclusions: React.FC = () => {
           <div className="w-full max-w-[678px] px-6 py-8 flex flex-col gap-6">
             {/* Header */}
             <div className="flex flex-col gap-1">
-              <h1 className="text-2xl font-bold text-[#01272E]">Allergens & Exclusions</h1>
+              <h1 className="text-2xl font-bold text-[#01272E]">Exclude allergens or ingredients</h1>
               <p className="text-base font-medium text-[#657A7E]">
-                Select any allergens or ingredients you'd like to exclude from recipes.
+                We'll filter these out when showing recipes.
               </p>
             </div>
 
@@ -71,26 +70,15 @@ const Step3AllergensExclusions: React.FC = () => {
 
               {/* Search Tab Content */}
               {activeTab === 'search' && (
-                <div className="bg-white border border-[#DFE3E4] rounded p-3 flex flex-col gap-3">
-                  {/* Search Input */}
-                  <Search
+                <div className="bg-white border border-[#DFE3E4] rounded p-3">
+                  <SearchDropdown
                     placeholder="Search ingredients, allergens or food groups"
-                    value={searchQuery}
-                    onChange={setSearchQuery}
+                    options={allergens}
+                    selectedOptions={selectedAllergens}
+                    suggestedOptions={allergens}
+                    onOptionToggle={toggleAllergen}
                     variant="stretch"
                   />
-
-                  {/* Allergen Chips */}
-                  <div className="flex flex-wrap gap-3">
-                    {allergens.map((allergen) => (
-                      <Chip
-                        key={allergen}
-                        label={allergen}
-                        selected={selectedAllergens.includes(allergen)}
-                        onClick={() => toggleAllergen(allergen)}
-                      />
-                    ))}
-                  </div>
                 </div>
               )}
 

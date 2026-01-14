@@ -25,9 +25,10 @@ export const RailToggle: React.FC<RailToggleProps> = ({
   };
 
   const tooltipText = isCollapsed ? 'Expand' : 'Collapse';
+  const tooltipPosition = position === 'left' ? 'right' : 'left';
 
   return (
-    <Tooltip content={tooltipText}>
+    <Tooltip content={tooltipText} position={tooltipPosition}>
       <button
         type="button"
         onClick={onToggle}
