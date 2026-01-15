@@ -3,10 +3,10 @@ import Home from './pages/Home'
 import Plans from './pages/Plans'
 import Planner from './pages/Planner'
 import NutritionPlans from './pages/NutritionPlans'
-import Step1NutritionGoals from './pages/wizard/Step1NutritionGoals'
-import Step2FoodPreferences from './pages/wizard/Step2FoodPreferences'
-import Step3AllergensExclusions from './pages/wizard/Step3AllergensExclusions'
-import Step4ChooseRecipes from './pages/wizard/Step4ChooseRecipes'
+import Step1FoodPreferences from './pages/wizard/Step1FoodPreferences'
+import Step2AllergensExclusions from './pages/wizard/Step2AllergensExclusions'
+import Step3ChooseRecipes from './pages/wizard/Step3ChooseRecipes'
+import Step4FinalizePlan from './pages/wizard/Step4FinalizePlan'
 
 function App() {
   return (
@@ -15,10 +15,10 @@ function App() {
         <Route path="/" element={<Navigate to="/nutrition" replace />} />
         <Route path="/nutrition" element={<NutritionPlans />} />
         <Route path="/clients" element={<Home />} />
-        <Route path="/wizard/step-1" element={<Step1NutritionGoals />} />
-        <Route path="/wizard/step-2" element={<Step2FoodPreferences />} />
-        <Route path="/wizard/step-3" element={<Step3AllergensExclusions />} />
-        <Route path="/wizard/step-4" element={<Step4ChooseRecipes />} />
+        <Route path="/wizard/step-1" element={<Step1FoodPreferences />} />
+        <Route path="/wizard/step-2" element={<Step2AllergensExclusions />} />
+        <Route path="/wizard/step-3" element={<Step3ChooseRecipes />} />
+        <Route path="/wizard/step-4" element={<Step4FinalizePlan />} />
         <Route path="/nutrition-plans" element={<NutritionPlans />} />
         <Route path="/plans" element={<Plans />} />
         <Route path="/plans/:planId/planner" element={<Planner />} />

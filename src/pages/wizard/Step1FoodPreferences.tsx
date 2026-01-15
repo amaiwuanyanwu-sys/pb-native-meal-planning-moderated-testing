@@ -43,7 +43,7 @@ const foodPreferences = {
   ]
 };
 
-const Step2FoodPreferences: React.FC = () => {
+const Step1FoodPreferences: React.FC = () => {
   const navigate = useNavigate();
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
 
@@ -60,11 +60,11 @@ const Step2FoodPreferences: React.FC = () => {
   };
 
   const handleNext = () => {
-    navigate('/wizard/step-3');
+    navigate('/wizard/step-2');
   };
 
   const handlePrevious = () => {
-    navigate('/wizard/step-1');
+    navigate('/nutrition');
   };
 
   return (
@@ -176,4 +176,4 @@ const Step2FoodPreferences: React.FC = () => {
   );
 };
 
-export default Step2FoodPreferences;
+export default Step1FoodPreferences;

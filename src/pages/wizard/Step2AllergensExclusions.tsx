@@ -8,7 +8,7 @@ import { SearchDropdown } from '@/components/ui/SearchDropdown';
 
 const allergens = ['Dairy', 'Alliums', 'Tree nuts', 'Fish', 'Soy', 'Meat', 'Onions', 'Leeks'];
 
-const Step3AllergensExclusions: React.FC = () => {
+const Step2AllergensExclusions: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('search');
   const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
@@ -32,11 +32,11 @@ const Step3AllergensExclusions: React.FC = () => {
   };
 
   const handleNext = () => {
-    navigate('/wizard/step-4');
+    navigate('/wizard/step-3');
   };
 
   const handlePrevious = () => {
-    navigate('/wizard/step-2');
+    navigate('/wizard/step-1');
   };
 
   return (
@@ -157,4 +157,4 @@ const Step3AllergensExclusions: React.FC = () => {
   );
 };
 
-export default Step3AllergensExclusions;
+export default Step2AllergensExclusions;
