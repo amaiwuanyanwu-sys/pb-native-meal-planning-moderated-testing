@@ -5,8 +5,59 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { IngredientIcon } from '@/components/icons/IngredientIcon';
-import { DirectionsIcon } from '@/components/icons/DirectionsIcon';
+import { Tag } from '@/components/ui/Tag';
 import { cn } from '@/lib/utils';
+
+// Helper function to determine accent color based on tag type
+const getTagAccentColor = (tag: string): 'spring' | 'lake' | 'creamsicle' | 'default' => {
+  const lowerTag = tag.toLowerCase();
+
+  // Check for high/low tags first (use creamsicle)
+  if (lowerTag.includes('high') || lowerTag.includes('low')) {
+    return 'creamsicle';
+  }
+
+  // Dietary tags (use spring)
+  const dietaryTags = [
+    'vegan', 'vegetarian', 'pescetarian', 'gluten-free',
+    'anti-inflammatory', 'ketogenic', 'paleo', 'mediterranean',
+    'anti-candida', 'auto-immune', 'elimination', 'fodmap'
+  ];
+
+  // Effort/convenience tags (use lake)
+  const effortTags = [
+    'quick & easy', 'quick and easy', 'one-pan', 'meal prep',
+    'baked', 'grilled'
+  ];
+
+  if (dietaryTags.some(dietary => lowerTag.includes(dietary))) {
+    return 'spring';
+  }
+
+  if (effortTags.some(effort => lowerTag.includes(effort))) {
+    return 'lake';
+  }
+
+  return 'default';
+};
+
+// Helper function to filter out meal time and cuisine tags
+const shouldShowTag = (tag: string): boolean => {
+  const lowerTag = tag.toLowerCase();
+  const excludedTags = [
+    // Meal time tags
+    'breakfast', 'lunch', 'dinner', 'snack', 'snacks', 'dessert',
+    'appetizer', 'side', 'side dish', 'beverage', 'drink',
+    // Cuisine/food type tags
+    'italian', 'pasta', 'mexican', 'chinese', 'japanese', 'thai', 'indian',
+    'american', 'french', 'greek', 'spanish', 'korean', 'vietnamese',
+    'mediterranean', 'asian', 'european', 'latin', 'middle eastern',
+    'pizza', 'sandwich', 'salad', 'soup', 'stew', 'curry', 'stir-fry',
+    'casserole', 'bowl', 'wrap', 'taco', 'burger', 'noodles', 'rice'
+  ];
+  // Check if tag contains any excluded words
+  return !excludedTags.some(excluded => lowerTag === excluded || lowerTag.includes(excluded));
+};
 
 export interface Recipe {
   id: number;
@@ -47,23 +98,19 @@ interface RecipeDetailsPopoverProps {
 const AccordionSection: React.FC<{
   id: string;
   title: string;
-  icon: React.ReactNode;
   children: React.ReactNode;
   isExpanded: boolean;
   onToggle: () => void;
-}> = ({ title, icon, children, isExpanded, onToggle }) => {
+}> = ({ title, children, isExpanded, onToggle }) => {
   return (
     <div className="flex flex-col">
       <button
         onClick={onToggle}
         className="bg-white flex h-10 items-center justify-between pl-4 pr-0 py-0 w-full hover:bg-[#F8F9F9] transition-colors"
       >
-        <div className="flex gap-2 items-center">
-          {icon}
-          <span className="text-sm font-semibold text-[#385459]">
-            {title}
-          </span>
-        </div>
+        <span className="text-sm font-semibold text-[#385459]">
+          {title}
+        </span>
         <div className="flex items-center justify-end">
           <div className="flex items-center justify-center p-2 rounded w-10">
             <span
@@ -91,10 +138,18 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
   isActionActive = false,
   children,
 }) => {
-  const [expandedSection, setExpandedSection] = useState<string | null>('ingredients');
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['ingredients']));
 
   const toggleSection = (sectionId: string) => {
-    setExpandedSection(prev => prev === sectionId ? null : sectionId);
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId);
+      } else {
+        newSet.add(sectionId);
+      }
+      return newSet;
+    });
   };
 
   return (
@@ -105,8 +160,8 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
       <PopoverContent
         className="w-[380px] p-0 overflow-y-auto max-h-[90vh] overscroll-contain"
         side="right"
-        align="start"
-        sideOffset={8}
+        align="center"
+        sideOffset={-20}
         collisionPadding={16}
       >
         <div className="relative">
@@ -149,15 +204,15 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
             </div>
 
             {/* Tags */}
-            {recipe.tags && recipe.tags.length > 0 && (
+            {recipe.tags && recipe.tags.filter(shouldShowTag).length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {recipe.tags.map((tag, index) => (
-                  <span
+                {recipe.tags.filter(shouldShowTag).map((tag, index) => (
+                  <Tag
                     key={index}
-                    className="bg-[#CFF6DC] text-[#244348] text-xs font-medium px-2 py-0.5 rounded-full"
-                  >
-                    {tag}
-                  </span>
+                    label={tag}
+                    type="informational"
+                    accentColor={getTagAccentColor(tag)}
+                  />
                 ))}
               </div>
             )}
@@ -190,12 +245,7 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
               <AccordionSection
                 id="ingredients"
                 title="Ingredients"
-                icon={
-                  <div className="w-6 h-6 flex items-center justify-center">
-                    <IngredientIcon className="text-[#657A7E] w-6 h-6" />
-                  </div>
-                }
-                isExpanded={expandedSection === 'ingredients'}
+                isExpanded={expandedSections.has('ingredients')}
                 onToggle={() => toggleSection('ingredients')}
               >
                 <div className="flex flex-col gap-1 px-1 py-2 pb-3">
@@ -221,18 +271,16 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
               <AccordionSection
                 id="nutrition"
                 title="Nutrition"
-                icon={
-                  <span className="material-icons-outlined text-2xl text-[#657A7E]">
-                    receipt
-                  </span>
-                }
-                isExpanded={expandedSection === 'nutrition'}
+                isExpanded={expandedSections.has('nutrition')}
                 onToggle={() => toggleSection('nutrition')}
               >
                 <div className="flex flex-col">
-                  <div className="flex flex-col gap-1 items-end px-4 py-0">
-                    <span className="text-xs font-semibold text-[#657A7E] text-right">
+                  <div className="flex items-center justify-between px-4 py-0">
+                    <span className="text-xs font-semibold text-[#657A7E]">
                       Amount per serving
+                    </span>
+                    <span className="text-xs font-semibold text-[#657A7E]">
+                      % Daily Value (2000 cal diet)
                     </span>
                   </div>
                   <div className="flex flex-col overflow-clip pt-2 px-0 pb-0">
@@ -242,6 +290,21 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
                       const unit = key === 'calories' ? 'cal' :
                                   key === 'sugar' || key === 'cholesterol' || key === 'sodium' || key === 'protein' ? 'mg' : 'g';
 
+                      // Calculate % Daily Value based on FDA standards (2000 cal diet)
+                      const dailyValues: Record<string, number> = {
+                        calories: 2000,
+                        fat: 78, // g
+                        carbs: 275, // g
+                        fiber: 28, // g
+                        sugar: 50, // g (added sugars)
+                        protein: 50, // g
+                        cholesterol: 300, // mg
+                        sodium: 2300, // mg
+                      };
+
+                      const dailyValue = dailyValues[key];
+                      const percentage = dailyValue ? Math.round((value / dailyValue) * 100) : 0;
+
                       return (
                         <div
                           key={key}
@@ -250,15 +313,18 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
                             index % 2 === 0 ? "bg-white" : "bg-[#F8F9F9]"
                           )}
                         >
-                          <div className="flex gap-4 items-center px-3 py-2 w-full">
-                            <div className="flex-1 flex flex-col gap-1 items-start">
+                          <div className="flex gap-4 items-center justify-between px-3 py-2 w-full">
+                            <div className="flex gap-1 items-baseline">
                               <p className="text-sm font-semibold text-[#244348]">
                                 {label}
                               </p>
+                              <span className="text-xs font-semibold text-[#657A7E]">
+                                {value} {unit}
+                              </span>
                             </div>
                             <div className="flex flex-col gap-1 items-end justify-center">
-                              <span className="text-xs font-semibold text-[#657A7E] text-right">
-                                {value} {unit}
+                              <span className="text-xs font-semibold text-[#244348] text-right">
+                                {percentage}%
                               </span>
                             </div>
                           </div>
@@ -275,12 +341,7 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
               <AccordionSection
                 id="directions"
                 title="Directions"
-                icon={
-                  <div className="w-6 h-6 flex items-center justify-center">
-                    <DirectionsIcon className="text-[#657A7E]" />
-                  </div>
-                }
-                isExpanded={expandedSection === 'directions'}
+                isExpanded={expandedSections.has('directions')}
                 onToggle={() => toggleSection('directions')}
               >
                 <div className="bg-white flex flex-col gap-3 px-3 pr-4 pt-2 pb-0 text-sm font-medium text-[#244348]">

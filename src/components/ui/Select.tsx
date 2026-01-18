@@ -77,8 +77,8 @@ export const Select: React.FC<SelectProps> = ({
             'hover:border-[#96A5A8]'
           )}
         >
-          {/* Avatar if present */}
-          {selectedOption?.avatar && (
+          {/* Avatar or placeholder icon */}
+          {selectedOption?.avatar ? (
             <div
               className="rounded-full size-6 flex items-center justify-center shrink-0"
               style={{ backgroundColor: selectedOption.avatar.color }}
@@ -87,7 +87,11 @@ export const Select: React.FC<SelectProps> = ({
                 {selectedOption.avatar.initials}
               </p>
             </div>
-          )}
+          ) : !hasValue && icon ? (
+            <div className="flex items-center justify-center shrink-0">
+              {icon}
+            </div>
+          ) : null}
 
           {/* Selected value */}
           <div className="flex-1 text-left">
@@ -100,11 +104,6 @@ export const Select: React.FC<SelectProps> = ({
 
           {/* Right icons */}
           <div className="flex items-center shrink-0">
-            {icon && (
-              <div className="border-0 border-[#96A5A8] w-10 p-2 flex items-center justify-center">
-                {icon}
-              </div>
-            )}
             <div className="border-0 border-[#96A5A8] w-10 p-2 flex items-center justify-center">
               <span
                 className={cn(
@@ -122,13 +121,14 @@ export const Select: React.FC<SelectProps> = ({
         {/* Floating Label */}
         <div
           className={cn(
-            'absolute left-0 px-2 h-3 flex items-center transition-all pointer-events-none',
-            shouldFloatLabel ? '-top-2' : 'top-1/2 -translate-y-1/2 left-3'
+            'absolute h-3 flex items-center transition-all pointer-events-none',
+            shouldFloatLabel ? 'left-0 px-2' : (!hasValue && icon ? 'left-11' : 'left-3'),
+            shouldFloatLabel ? '-top-2' : 'top-1/2 -translate-y-1/2'
           )}
         >
           <div className={cn(
-            'px-1 h-3 flex items-center transition-all',
-            shouldFloatLabel ? 'bg-white' : 'bg-transparent'
+            'h-3 flex items-center transition-all',
+            shouldFloatLabel ? 'bg-white px-1' : 'bg-transparent'
           )}>
             <p className={cn(
               'font-semibold leading-none transition-all',

@@ -5,17 +5,33 @@ import { IconButton } from '@/components/ui/IconButton';
 import { Tabs } from '@/components/ui/Tabs';
 import { Select } from '@/components/ui/Select';
 import type { SelectOption } from '@/components/ui/Select';
+import { InfoBanner } from '@/components/ui/InfoBanner';
+import { SegmentedControl } from '@/components/ui/SegmentedControl';
+import { AnimatedFruits } from '@/components/ui/AnimatedFruits';
 import { mockRecipes } from '@/data/mockRecipes';
 import { mockUsers } from '@/data/mockUsers';
 
 const Step4FinalizePlan: React.FC = () => {
   const navigate = useNavigate();
+  const [isCreatingPlan, setIsCreatingPlan] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
   const [activeTab, setActiveTab] = useState('client');
-  const [planStructure, setPlanStructure] = useState<'recipes' | 'simple' | 'structured'>('recipes');
-  const [recipeVariety, setRecipeVariety] = useState<'low' | 'moderate' | 'high' | 'custom'>('moderate');
-  const [additionalInstructions, setAdditionalInstructions] = useState('');
+  const [mealPlanChoice, setMealPlanChoice] = useState<'no' | 'yes'>('no');
   const [selectedUserId, setSelectedUserId] = useState('');
   const [templateName, setTemplateName] = useState('');
+
+  // Meal plan structure state
+  const [mealPlanStructure, setMealPlanStructure] = useState<'structured' | 'simple'>('structured');
+
+  // Daily nutrition targets state
+  const [calories, setCalories] = useState('2,000');
+  const [protein, setProtein] = useState('110');
+  const [carbs, setCarbs] = useState('120');
+  const [fat, setFat] = useState('65');
+  const [fiber, setFiber] = useState('30');
+
+  // What's most important state
+  const [importance, setImportance] = useState<'grocery' | 'variety' | 'other'>('grocery');
 
   // Load selected recipes from localStorage (from Step 4)
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<number[]>(() => {
@@ -55,10 +71,141 @@ const Step4FinalizePlan: React.FC = () => {
   };
 
   const handleFinalize = () => {
-    // TODO: Save the plan and navigate to the nutrition plans page
-    clearWizardData();
-    navigate('/nutrition');
+    setIsCreatingPlan(true);
+    setLoadingStep(1); // Start at step 1 immediately
   };
+
+  // Handle loading progression
+  useEffect(() => {
+    if (!isCreatingPlan) return;
+
+    const loadingSteps = [
+      { duration: 2000, step: 2 }, // Building your meal plan
+      { duration: 2000, step: 3 }, // Generating grocery list
+      { duration: 1500, step: 4 }, // Making some final touches
+    ];
+
+    let currentStepIndex = 0;
+
+    const progressToNextStep = () => {
+      if (currentStepIndex < loadingSteps.length) {
+        const { duration, step } = loadingSteps[currentStepIndex];
+        setTimeout(() => {
+          setLoadingStep(step);
+          currentStepIndex++;
+          if (currentStepIndex < loadingSteps.length) {
+            progressToNextStep();
+          } else {
+            // All steps complete, navigate to nutrition plans
+            setTimeout(() => {
+              clearWizardData();
+              navigate('/nutrition');
+            }, 1500);
+          }
+        }, duration);
+      }
+    };
+
+    progressToNextStep();
+  }, [isCreatingPlan, navigate]);
+
+  // Loading state - Creating nutrition plan
+  if (isCreatingPlan) {
+    const steps = [
+      'Analyzing your recipes',
+      'Building your meal plan',
+      'Generating grocery list',
+      'Making some final touches'
+    ];
+
+    return (
+      <div className="flex h-screen bg-[#F8F9F9]">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Top Bar */}
+          <div className="bg-[#F0F2F3] flex items-center justify-center px-6 py-2 h-10">
+            <div className="flex items-center gap-2.5">
+              <MagicWandIcon className="text-[#657A7E]" />
+              <p className="text-sm font-semibold text-[#244348]">Nutrition Plan Assistant</p>
+            </div>
+          </div>
+
+          {/* Loading Content */}
+          <div className="flex-1 flex items-center justify-center px-0 py-10">
+            <div className="flex flex-col gap-4 items-center justify-center px-6 py-8 w-[461px]">
+              {/* Animated Fruits */}
+              <AnimatedFruits className="w-32 h-36" />
+
+              {/* Header */}
+              <div className="flex gap-6 items-start px-0 py-0 w-[348px]">
+                <div className="flex flex-col gap-1 items-start w-full">
+                  <div className="flex gap-2.5 items-start w-full">
+                    <h1 className="text-2xl font-bold text-[#01272E]">
+                      Creating your nutrition plan
+                    </h1>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Steps */}
+              <div className="flex flex-col items-start w-[392px]">
+                {steps.map((step, index) => {
+                  const stepNumber = index + 1;
+                  const isActive = loadingStep === stepNumber;
+                  const isCompleted = loadingStep > stepNumber;
+                  const isWaiting = loadingStep < stepNumber;
+
+                  return (
+                    <div
+                      key={index}
+                      className={`flex flex-col items-start w-full ${isWaiting ? 'opacity-50' : ''}`}
+                    >
+                      <div className="flex gap-4 items-center px-3 py-0 w-full">
+                        <div className="flex gap-3 items-center flex-1">
+                          {/* Icon */}
+                          <div className="flex items-center justify-center overflow-clip p-2 rounded w-10">
+                            {isCompleted ? (
+                              <span className="material-icons text-2xl text-[#1E8754]">
+                                check_circle
+                              </span>
+                            ) : isActive ? (
+                              <span className="material-icons text-2xl text-[#244348] animate-spin">
+                                autorenew
+                              </span>
+                            ) : (
+                              <span className="material-icons-outlined text-2xl text-[#657A7E]">
+                                hourglass_empty
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Text */}
+                          <div className="flex flex-col gap-1 items-start flex-1">
+                            <p className="text-sm font-semibold text-[#244348]">
+                              {step}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Navigation */}
+          <div className="bg-[#F8F9F9] border-t border-[#C1C9CB] px-6 py-4 flex items-center justify-between">
+            <button
+              onClick={handleCancel}
+              className="px-4 py-2.5 rounded hover:bg-[#DFE3E4] transition-colors"
+            >
+              <p className="text-sm font-semibold text-[#01272E]">Cancel</p>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-[#F8F9F9]">
@@ -77,7 +224,7 @@ const Step4FinalizePlan: React.FC = () => {
           <div className="w-full max-w-[678px] px-6 py-8 flex flex-col gap-6">
             {/* Header */}
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-bold text-[#01272E]">Finalize nutrition plan</h1>
+              <h1 className="text-2xl font-bold text-[#01272E]">Customize nutrition plan</h1>
             </div>
 
             {/* Tabs */}
@@ -96,6 +243,11 @@ const Step4FinalizePlan: React.FC = () => {
                   onChange={setSelectedUserId}
                   required
                   helpText="Saved to client's profile. We won't share it until you're ready."
+                  icon={
+                    <span className="material-icons text-[#657A7E]" style={{ fontSize: '24px' }}>
+                      person
+                    </span>
+                  }
                 />
               )}
 
@@ -103,17 +255,26 @@ const Step4FinalizePlan: React.FC = () => {
               {activeTab === 'template' && (
                 <div className="flex flex-col gap-1 relative">
                   <div className="relative">
-                    <input
-                      type="text"
-                      value={templateName}
-                      onChange={(e) => setTemplateName(e.target.value)}
-                      className="bg-white border border-[#C1C9CB] rounded h-10 w-full pl-3 pr-3 text-sm font-medium text-[#244348] focus:outline-none focus:border-[#385459] peer"
-                    />
-                    <div className={`absolute left-0 px-2 h-3 flex items-center transition-all pointer-events-none ${
-                      templateName ? '-top-2' : 'top-1/2 -translate-y-1/2 left-3'
+                    <div className="relative flex items-center">
+                      {!templateName && (
+                        <span className="material-icons text-[#657A7E] absolute left-3 pointer-events-none z-10" style={{ fontSize: '24px' }}>
+                          dashboard
+                        </span>
+                      )}
+                      <input
+                        type="text"
+                        value={templateName}
+                        onChange={(e) => setTemplateName(e.target.value)}
+                        className={`bg-white border border-[#C1C9CB] rounded h-10 w-full pr-3 text-sm font-medium text-[#244348] focus:outline-none focus:border-[#385459] peer ${
+                          templateName ? 'pl-3' : 'pl-11'
+                        }`}
+                      />
+                    </div>
+                    <div className={`absolute h-3 flex items-center transition-all pointer-events-none z-20 ${
+                      templateName ? 'left-0 px-2 -top-2' : 'left-11 top-1/2 -translate-y-1/2'
                     }`}>
-                      <div className={`px-1 h-3 flex items-center transition-all ${
-                        templateName ? 'bg-white' : 'bg-transparent'
+                      <div className={`h-3 flex items-center transition-all ${
+                        templateName ? 'bg-white px-1' : 'bg-transparent'
                       }`}>
                         <p className={`font-semibold leading-none transition-all ${
                           templateName ? 'text-xs text-[#385459]' : 'text-sm text-[#657A7E]'
@@ -126,162 +287,222 @@ const Step4FinalizePlan: React.FC = () => {
                 </div>
               )}
 
-              {/* Plan Structure Section */}
-              <div className="flex flex-col gap-1">
-                <p className="text-sm font-semibold text-[#244348]">Plan structure</p>
-                <div className="flex gap-3">
-                  {/* Recipes only */}
-                  <button
-                    onClick={() => setPlanStructure('recipes')}
-                    className={`flex-1 flex flex-col gap-2 p-4 rounded overflow-hidden border-2 transition-colors ${
-                      planStructure === 'recipes'
-                        ? 'bg-white border-[#385459]'
-                        : 'bg-white border-[#C1C9CB] hover:border-[#96A5A8]'
-                    }`}
-                  >
-                    <div className="bg-[#F0F2F3] rounded p-1 size-10 flex items-center justify-center">
-                      <span className="material-icons text-[#657A7E]" style={{ fontSize: '24px' }}>
-                        room_service
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-1 text-left">
-                      <p className="text-sm font-medium text-[#01272E]">Recipes only</p>
-                      <p className="text-xs font-medium text-[#657A7E]">
-                        Just your recipe box. Add a meal plan later if needed.
-                      </p>
-                    </div>
-                  </button>
-
-                  {/* Simple meal plan */}
-                  <button
-                    onClick={() => setPlanStructure('simple')}
-                    className={`flex-1 flex flex-col gap-2 p-4 rounded overflow-hidden border transition-colors ${
-                      planStructure === 'simple'
-                        ? 'bg-white border-2 border-[#385459]'
-                        : 'border border-[#C1C9CB] hover:border-[#96A5A8]'
-                    }`}
-                  >
-                    <div className="bg-[#F0F2F3] rounded p-1 size-10 flex items-center justify-center">
-                      <span className="material-icons text-[#657A7E]" style={{ fontSize: '24px' }}>
-                        view_kanban
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-1 text-left">
-                      <p className="text-sm font-medium text-[#01272E]">Simple meal plan</p>
-                      <p className="text-xs font-medium text-[#657A7E]">
-                        Recipes organized into groups.
-                      </p>
-                    </div>
-                  </button>
-
-                  {/* Structured meal plan */}
-                  <button
-                    onClick={() => setPlanStructure('structured')}
-                    className={`flex-1 flex flex-col gap-2 p-4 rounded overflow-hidden border transition-colors ${
-                      planStructure === 'structured'
-                        ? 'bg-white border-2 border-[#385459]'
-                        : 'border border-[#C1C9CB] hover:border-[#96A5A8]'
-                    }`}
-                  >
-                    <div className="bg-[#F0F2F3] rounded p-1 size-10 flex items-center justify-center">
-                      <span className="material-icons-outlined text-[#657A7E]" style={{ fontSize: '24px' }}>
-                        calendar_view_week
-                      </span>
-                    </div>
-                    <div className="flex flex-col gap-1 text-left">
-                      <p className="text-sm font-medium text-[#01272E]">Structured meal plan</p>
-                      <p className="text-xs font-medium text-[#657A7E]">
-                        A one-week meal plan. Add more weeks later.
-                      </p>
-                    </div>
-                  </button>
-                </div>
+              {/* Do you want a meal plan? Section */}
+              <div className="flex flex-col gap-3">
+                <p className="text-sm font-semibold text-[#244348]">Do you want a meal plan?</p>
+                <SegmentedControl
+                  options={[
+                    { value: 'no', label: 'No, only recipe collection' },
+                    { value: 'yes', label: 'Yes, add a meal plan' },
+                  ]}
+                  value={mealPlanChoice}
+                  onChange={(value) => setMealPlanChoice(value as 'no' | 'yes')}
+                  className="w-fit"
+                />
               </div>
 
-              {/* Recipe Variety Section */}
-              <div className="flex flex-col gap-1">
-                <p className="text-sm font-semibold text-[#244348]">Recipe variety</p>
-                <div className="bg-white border border-[#C1C9CB] rounded h-10 inline-flex items-center px-[3px] py-0.5 w-fit">
-                  <button
-                    onClick={() => setRecipeVariety('low')}
-                    className={`h-[34px] rounded flex items-center justify-center px-4 py-2.5 transition-colors ${
-                      recipeVariety === 'low'
-                        ? 'bg-[#385459]'
-                        : 'hover:bg-[#F0F2F3]'
-                    }`}
-                  >
-                    <p className={`text-sm font-semibold whitespace-nowrap ${
-                      recipeVariety === 'low' ? 'text-white' : 'text-[#385459]'
-                    }`}>
-                      Low
-                    </p>
-                  </button>
-                  <button
-                    onClick={() => setRecipeVariety('moderate')}
-                    className={`h-[34px] rounded flex items-center justify-center px-4 py-2.5 transition-colors ${
-                      recipeVariety === 'moderate'
-                        ? 'bg-[#385459]'
-                        : 'hover:bg-[#F0F2F3]'
-                    }`}
-                  >
-                    <p className={`text-sm font-semibold whitespace-nowrap ${
-                      recipeVariety === 'moderate' ? 'text-white' : 'text-[#385459]'
-                    }`}>
-                      Moderate
-                    </p>
-                  </button>
-                  <button
-                    onClick={() => setRecipeVariety('high')}
-                    className={`h-[34px] rounded flex items-center justify-center px-4 py-2.5 transition-colors ${
-                      recipeVariety === 'high'
-                        ? 'bg-[#385459]'
-                        : 'hover:bg-[#F0F2F3]'
-                    }`}
-                  >
-                    <p className={`text-sm font-semibold whitespace-nowrap ${
-                      recipeVariety === 'high' ? 'text-white' : 'text-[#385459]'
-                    }`}>
-                      High
-                    </p>
-                  </button>
-                  <button
-                    onClick={() => setRecipeVariety('custom')}
-                    className={`h-[34px] rounded flex items-center justify-center px-4 py-2.5 transition-colors ${
-                      recipeVariety === 'custom'
-                        ? 'bg-[#385459]'
-                        : 'hover:bg-[#F0F2F3]'
-                    }`}
-                  >
-                    <p className={`text-sm font-semibold whitespace-nowrap ${
-                      recipeVariety === 'custom' ? 'text-white' : 'text-[#385459]'
-                    }`}>
-                      Custom
-                    </p>
-                  </button>
-                </div>
-                <div className="flex items-center px-3">
-                  <p className="text-xs font-medium text-[#657A7E]">
-                    {`Some variety, manageable grocery list. We'll suggest recipes to fill any gaps.`}
-                  </p>
-                </div>
-              </div>
+              {/* Conditional sections when meal plan is selected */}
+              {mealPlanChoice === 'yes' && (
+                <>
+                  {/* Choose a meal plan structure */}
+                  <div className="flex flex-col gap-3">
+                    <p className="text-sm font-semibold text-[#244348]">Choose a meal plan structure</p>
+                    <div className="flex gap-3">
+                      {/* Structured meal plan */}
+                      <button
+                        onClick={() => setMealPlanStructure('structured')}
+                        className={`flex-1 flex flex-col gap-2 p-4 rounded overflow-hidden border transition-colors ${
+                          mealPlanStructure === 'structured'
+                            ? 'bg-white border-2 border-[#385459]'
+                            : 'bg-white border border-[#C1C9CB] hover:border-[#96A5A8]'
+                        }`}
+                      >
+                        <div className="flex gap-3 items-start text-left">
+                          <span className="material-icons-outlined text-[#657A7E]" style={{ fontSize: '24px' }}>
+                            grid_on
+                          </span>
+                          <div className="flex flex-col gap-1">
+                            <p className="text-sm font-medium text-[#01272E]">Structured meal plan</p>
+                            <p className="text-xs font-medium text-[#657A7E]">
+                              We'll create a 5 day plan with the recipe collection.
+                            </p>
+                          </div>
+                        </div>
+                      </button>
 
-              {/* Additional Instructions */}
-              <div className="flex flex-col gap-1 min-h-[108px]">
-                <div className="flex-1 pt-1.5 relative">
-                  <textarea
-                    value={additionalInstructions}
-                    onChange={(e) => setAdditionalInstructions(e.target.value)}
-                    placeholder="Additional instructions"
-                    className="bg-white border border-[#C1C9CB] rounded px-3 py-2.5 w-full h-20 text-sm font-medium text-[#01272E] placeholder:text-[#657A7E] resize-none focus:outline-none focus:border-[#385459]"
-                  />
-                </div>
-                <div className="flex items-center px-3">
-                  <p className="text-xs font-medium text-[#657A7E]">
-                    E.g. no smoothies, batch-cooking friendly, avoid repeating proteins
-                  </p>
-                </div>
-              </div>
+                      {/* Simple meal plan */}
+                      <button
+                        onClick={() => setMealPlanStructure('simple')}
+                        className={`flex-1 flex flex-col gap-2 p-4 rounded overflow-hidden border transition-colors ${
+                          mealPlanStructure === 'simple'
+                            ? 'bg-white border-2 border-[#385459]'
+                            : 'bg-white border border-[#C1C9CB] hover:border-[#96A5A8]'
+                        }`}
+                      >
+                        <div className="flex gap-3 items-start text-left">
+                          <span className="material-icons-outlined text-[#657A7E]" style={{ fontSize: '24px' }}>
+                            view_kanban
+                          </span>
+                          <div className="flex flex-col gap-1">
+                            <p className="text-sm font-medium text-[#01272E]">Simple meal plan</p>
+                            <p className="text-xs font-medium text-[#657A7E]">
+                              We'll organize recipes in the collection into groups
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Daily nutrition targets */}
+                  <div className="flex flex-col gap-3">
+                    <p className="text-sm font-semibold text-[#244348]">Daily nutrition targets</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {/* Calories */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-[#657A7E]">Calories (kcal)</label>
+                        <input
+                          type="text"
+                          value={calories}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Allow empty string, numbers, and commas
+                            if (value === '' || /^[\d,]+$/.test(value)) {
+                              setCalories(value);
+                            }
+                          }}
+                          className="bg-white border border-[#C1C9CB] rounded h-10 px-3 text-sm font-medium text-[#244348] focus:outline-none focus:border-[#385459]"
+                        />
+                      </div>
+
+                      {/* Protein */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-[#657A7E]">Protein (g)</label>
+                        <input
+                          type="text"
+                          value={protein}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Only allow numbers
+                            if (value === '' || /^\d+$/.test(value)) {
+                              setProtein(value);
+                            }
+                          }}
+                          className="bg-white border border-[#C1C9CB] rounded h-10 px-3 text-sm font-medium text-[#244348] focus:outline-none focus:border-[#385459]"
+                        />
+                      </div>
+
+                      {/* Carbs */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-[#657A7E]">Carb (g)</label>
+                        <input
+                          type="text"
+                          value={carbs}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Only allow numbers
+                            if (value === '' || /^\d+$/.test(value)) {
+                              setCarbs(value);
+                            }
+                          }}
+                          className="bg-white border border-[#C1C9CB] rounded h-10 px-3 text-sm font-medium text-[#244348] focus:outline-none focus:border-[#385459]"
+                        />
+                      </div>
+
+                      {/* Fat */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-[#657A7E]">Fat (g)</label>
+                        <input
+                          type="text"
+                          value={fat}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Only allow numbers
+                            if (value === '' || /^\d+$/.test(value)) {
+                              setFat(value);
+                            }
+                          }}
+                          className="bg-white border border-[#C1C9CB] rounded h-10 px-3 text-sm font-medium text-[#244348] focus:outline-none focus:border-[#385459]"
+                        />
+                      </div>
+
+                      {/* Fiber */}
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-medium text-[#657A7E]">Fiber (g)</label>
+                        <input
+                          type="text"
+                          value={fiber}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            // Only allow numbers
+                            if (value === '' || /^\d+$/.test(value)) {
+                              setFiber(value);
+                            }
+                          }}
+                          className="bg-white border border-[#C1C9CB] rounded h-10 px-3 text-sm font-medium text-[#244348] focus:outline-none focus:border-[#385459]"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* What's most important */}
+                  <div className="flex flex-col gap-3">
+                    <p className="text-sm font-semibold text-[#244348]">What's most important for this plan?</p>
+                    <div className="bg-white border border-[#C1C9CB] rounded flex flex-col">
+                      {/* Small grocery list */}
+                      <button
+                        onClick={() => setImportance('grocery')}
+                        className="flex items-center gap-3 px-4 py-3 border-b border-[#DFE3E4] hover:bg-[#F8F9F9] transition-colors"
+                      >
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          importance === 'grocery'
+                            ? 'border-[#385459]'
+                            : 'border-[#C1C9CB]'
+                        }`}>
+                          {importance === 'grocery' && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#385459]" />
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-[#244348]">Small grocery list</p>
+                      </button>
+
+                      {/* More recipe variety */}
+                      <button
+                        onClick={() => setImportance('variety')}
+                        className="flex items-center gap-3 px-4 py-3 border-b border-[#DFE3E4] hover:bg-[#F8F9F9] transition-colors"
+                      >
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          importance === 'variety'
+                            ? 'border-[#385459]'
+                            : 'border-[#C1C9CB]'
+                        }`}>
+                          {importance === 'variety' && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#385459]" />
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-[#244348]">More recipe variety</p>
+                      </button>
+
+                      {/* Something else */}
+                      <button
+                        onClick={() => setImportance('other')}
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F9F9] transition-colors"
+                      >
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          importance === 'other'
+                            ? 'border-[#385459]'
+                            : 'border-[#C1C9CB]'
+                        }`}>
+                          {importance === 'other' && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#385459]" />
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-[#244348]">Something else...</p>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -318,28 +539,16 @@ const Step4FinalizePlan: React.FC = () => {
       <div className="bg-[#1E8754] flex flex-col w-[520px] shrink-0 p-12 overflow-clip">
         <div className="flex-1 flex flex-col gap-4 overflow-clip px-0 py-6 rounded-lg">
           {/* Info Alert */}
-          <div className="bg-[#F2F8FB] border border-[#007CB2] flex items-start">
-            <div className="bg-[#007CB2] w-2 self-stretch shrink-0" />
-            <div className="flex-1 flex gap-3 items-center pl-3 pr-2 py-0">
-              <span className="material-icons-outlined text-[#007CB2] shrink-0" style={{ fontSize: '24px' }}>
-                info
-              </span>
-              <div className="flex items-center py-2.5">
-                <p className="text-sm font-medium text-[#007CB2]">
-                  Sample structure of your nutrition plan
-                </p>
-              </div>
-            </div>
-          </div>
+          <InfoBanner message="Sample structure of your nutrition plan" />
 
-          {/* Recipe Box Widget */}
+          {/* Recipe Book Widget */}
           <div className="bg-white border border-[#DFE3E4] rounded-lg flex flex-col overflow-hidden">
             <div className="bg-[#F0F2F3] border-b border-[#DFE3E4] px-4 py-2 flex items-center">
               <div className="flex gap-2 items-center">
                 <span className="material-icons-outlined text-[#657A7E]" style={{ fontSize: '24px' }}>
                   menu_book
                 </span>
-                <p className="text-sm font-semibold text-[#244348]">Recipe box</p>
+                <p className="text-sm font-semibold text-[#244348]">Recipe book</p>
                 <div className="bg-[#DFE3E4] rounded-full px-2 py-0.5">
                   <p className="text-xs font-medium text-[#244348]">{selectedRecipes.length} {selectedRecipes.length === 1 ? 'recipe' : 'recipes'}</p>
                 </div>
@@ -382,126 +591,94 @@ const Step4FinalizePlan: React.FC = () => {
             </div>
 
             {/* Meal Plan Content */}
-            {planStructure === 'simple' ? (
+            {mealPlanChoice === 'yes' && mealPlanStructure === 'simple' ? (
               <div className="flex gap-3 p-4">
                 {/* Breakfast Column */}
-                <div className="border border-[#DFE3E4] rounded-lg flex flex-col gap-2 p-3 w-32 h-[250px]">
+                <div className="border border-[#DFE3E4] rounded-lg flex flex-col gap-2 p-3 flex-1">
                   <p className="text-xs font-semibold text-[#385459]">Breakfast</p>
-                  <div className="bg-[#E1F5FC] h-[42px] rounded-lg" />
-                  <div className="bg-[#E1F5FC] h-[42px] rounded-lg" />
                   <div className="bg-[#E1F5FC] h-[42px] rounded-lg" />
                   <div className="bg-[#E1F5FC] h-[42px] rounded-lg" />
                 </div>
 
                 {/* Lunch Column */}
-                <div className="border border-[#DFE3E4] rounded-lg flex flex-col gap-2 p-3 w-32">
+                <div className="border border-[#DFE3E4] rounded-lg flex flex-col gap-2 p-3 flex-1">
                   <p className="text-xs font-semibold text-[#385459]">Lunch</p>
-                  <div className="bg-[#E1F5FC] h-[42px] rounded-lg" />
                   <div className="bg-[#E1F5FC] h-[42px] rounded-lg" />
                   <div className="bg-[#E1F5FC] h-[42px] rounded-lg" />
                 </div>
 
                 {/* Dinner Column */}
-                <div className="border border-[#DFE3E4] rounded-lg flex flex-col gap-2 p-3 w-32 h-[250px]">
+                <div className="border border-[#DFE3E4] rounded-lg flex flex-col gap-2 p-3 flex-1">
                   <p className="text-xs font-semibold text-[#385459]">Dinner</p>
-                  <div className="bg-[#E1F5FC] h-[42px] rounded-lg" />
-                  <div className="bg-[#E1F5FC] h-[42px] rounded-lg" />
                   <div className="bg-[#E1F5FC] h-[42px] rounded-lg" />
                   <div className="bg-[#E1F5FC] h-[42px] rounded-lg" />
                 </div>
               </div>
-            ) : planStructure === 'structured' ? (
-              <div className="flex h-[233px]">
-                {/* Meal Types Column */}
-                <div className="border-l border-[#DFE3E4] flex flex-col w-[84px] h-[250px]">
-                  <div className="border-b border-[#DFE3E4] h-[30px]" />
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center h-[54px] px-3 py-1.5">
-                    <p className="text-xs font-semibold text-[#385459]">Breakfast</p>
+            ) : mealPlanChoice === 'yes' && mealPlanStructure === 'structured' ? (
+              <div className="p-4 overflow-x-auto">
+                <div className="inline-flex flex-col min-w-full border border-[#DFE3E4] rounded-lg overflow-hidden">
+                  {/* Header Row with Days */}
+                  <div className="flex border-b border-[#DFE3E4] bg-[#F8F9F9]">
+                    <div className="w-20 shrink-0 border-r border-[#DFE3E4]" />
+                    <div className="flex flex-1">
+                      <div className="flex-1 min-w-[90px] border-r border-[#DFE3E4] px-2 py-2 flex items-center justify-center">
+                        <p className="text-xs font-semibold text-[#385459]">Day 1</p>
+                      </div>
+                      <div className="flex-1 min-w-[90px] border-r border-[#DFE3E4] px-2 py-2 flex items-center justify-center">
+                        <p className="text-xs font-semibold text-[#385459]">Day 2</p>
+                      </div>
+                      <div className="flex-1 min-w-[90px] px-2 py-2 flex items-center justify-center">
+                        <p className="text-xs font-semibold text-[#385459]">Day 3</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center h-[54px] px-3 py-1.5">
-                    <p className="text-xs font-semibold text-[#385459]">Lunch</p>
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center h-[54px] px-3 py-1.5">
-                    <p className="text-xs font-semibold text-[#385459]">Dinner</p>
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center h-[54px] px-3 py-1.5">
-                    <p className="text-xs font-semibold text-[#385459]">Snacks</p>
-                  </div>
-                </div>
 
-                {/* Day 1 Column */}
-                <div className="border-l border-[#DFE3E4] flex flex-col w-[106px] h-[250px]">
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center px-3 py-1.5">
-                    <p className="text-xs font-semibold text-[#385459]">Day 1</p>
+                  {/* Breakfast Row */}
+                  <div className="flex border-b border-[#DFE3E4]">
+                    <div className="w-20 shrink-0 border-r border-[#DFE3E4] px-2 py-2 flex items-center bg-[#F8F9F9]">
+                      <p className="text-xs font-semibold text-[#385459]">Breakfast</p>
+                    </div>
+                    <div className="flex flex-1">
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px] border-r border-[#DFE3E4]" />
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px] border-r border-[#DFE3E4]" />
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px]" />
+                    </div>
                   </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                </div>
 
-                {/* Day 2 Column */}
-                <div className="border-l border-[#DFE3E4] flex flex-col w-[106px] h-[250px]">
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center px-3 py-1.5">
-                    <p className="text-xs font-semibold text-[#385459]">Day 2</p>
+                  {/* Lunch Row */}
+                  <div className="flex border-b border-[#DFE3E4]">
+                    <div className="w-20 shrink-0 border-r border-[#DFE3E4] px-2 py-2 flex items-center bg-[#F8F9F9]">
+                      <p className="text-xs font-semibold text-[#385459]">Lunch</p>
+                    </div>
+                    <div className="flex flex-1">
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px] border-r border-[#DFE3E4]" />
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px] border-r border-[#DFE3E4]" />
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px]" />
+                    </div>
                   </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                </div>
 
-                {/* Day 3 Column */}
-                <div className="border-l border-[#DFE3E4] flex flex-col w-[106px] h-[250px]">
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center px-3 py-1.5">
-                    <p className="text-xs font-semibold text-[#385459]">Day 3</p>
+                  {/* Dinner Row */}
+                  <div className="flex border-b border-[#DFE3E4]">
+                    <div className="w-20 shrink-0 border-r border-[#DFE3E4] px-2 py-2 flex items-center bg-[#F8F9F9]">
+                      <p className="text-xs font-semibold text-[#385459]">Dinner</p>
+                    </div>
+                    <div className="flex flex-1">
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px] border-r border-[#DFE3E4]" />
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px] border-r border-[#DFE3E4]" />
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px]" />
+                    </div>
                   </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                </div>
 
-                {/* Day 4 Column */}
-                <div className="border-l border-[#DFE3E4] flex flex-col w-[106px] h-[250px]">
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center px-3 py-1.5">
-                    <p className="text-xs font-medium text-[#385459]">Day 4</p>
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
-                  </div>
-                  <div className="border-b border-[#DFE3E4] flex items-center justify-center p-1.5">
-                    <div className="bg-[#E1F5FC] h-[42px] rounded-lg flex-1" />
+                  {/* Snacks Row */}
+                  <div className="flex">
+                    <div className="w-20 shrink-0 border-r border-[#DFE3E4] px-2 py-2 flex items-center bg-[#F8F9F9]">
+                      <p className="text-xs font-semibold text-[#385459]">Snacks</p>
+                    </div>
+                    <div className="flex flex-1">
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px] border-r border-[#DFE3E4]" />
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px] border-r border-[#DFE3E4]" />
+                      <div className="bg-[#E1F5FC] h-12 flex-1 min-w-[90px]" />
+                    </div>
                   </div>
                 </div>
               </div>

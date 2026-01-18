@@ -4,10 +4,11 @@ import { cn } from '@/lib/utils';
 interface ChipProps {
   label: string;
   selected?: boolean;
-  variant?: 'default' | 'removable'; // 'removable' shows X on right, no icon on left
+  variant?: 'default' | 'removable' | 'no-icon' | 'dropdown'; // 'no-icon' has no icons, 'dropdown' shows chevron on right
   size?: 'md' | 'sm'; // 'md' is 32px (h-8), 'sm' is also 32px but with smaller padding
   onClick?: () => void;
   className?: string;
+  rightIcon?: React.ReactNode;
 }
 
 export const Chip: React.FC<ChipProps> = ({
@@ -16,7 +17,8 @@ export const Chip: React.FC<ChipProps> = ({
   variant = 'default',
   size = 'md',
   onClick,
-  className
+  className,
+  rightIcon
 }) => {
   const iconSize = size === 'sm' ? '16px' : '22px';
 
@@ -40,6 +42,11 @@ export const Chip: React.FC<ChipProps> = ({
       <span className="text-sm font-medium leading-[1.4]">{label}</span>
       {variant === 'removable' && (
         <span className="material-icons" style={{ fontSize: iconSize }}>close</span>
+      )}
+      {variant === 'dropdown' && (
+        rightIcon || (
+          <span className="material-icons" style={{ fontSize: iconSize }}>keyboard_arrow_down</span>
+        )
       )}
     </button>
   );

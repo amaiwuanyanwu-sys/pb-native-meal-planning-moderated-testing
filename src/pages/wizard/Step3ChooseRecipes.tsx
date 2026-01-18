@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MagicWandIcon } from '@/components/icons/MagicWandIcon';
-import { IngredientIcon } from '@/components/icons/IngredientIcon';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
-import { Tabs } from '@/components/ui/Tabs';
 import { Search } from '@/components/ui/Search';
-import { FiltersSideRail } from '@/components/layout/FiltersSideRail';
-import type { FilterSection } from '@/components/layout/FiltersSideRail';
 import { RecipeDetailsPopover } from '@/components/nutrition-plans/RecipeDetailsPopover';
-import type { Recipe } from '@/components/nutrition-plans/RecipeDetailsPopover';
+import { Chip } from '@/components/ui/Chip';
 import { RecipeCard } from '@/components/nutrition-plans/RecipeCard';
 import { mockRecipes } from '@/data/mockRecipes';
+import { FiltersSideRail } from '@/components/layout/FiltersSideRail';
+import type { FilterSection } from '@/components/layout/FiltersSideRail';
+import { AnimatedFruits } from '@/components/ui/AnimatedFruits';
+import { Tabs } from '@/components/ui/Tabs';
+import { Tag } from '@/components/ui/Tag';
 
 const Step3ChooseRecipes: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('browse');
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState('Analyzing your preferences...');
   // Load selected recipes from localStorage or use default
   const [selectedRecipes, setSelectedRecipes] = useState<number[]>(() => {
     const stored = localStorage.getItem('wizard_selectedRecipes');
@@ -23,21 +25,18 @@ const Step3ChooseRecipes: React.FC = () => {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<'best-matches' | 'added'>('best-matches');
+  const [isFiltersSideRailOpen, setIsFiltersSideRailOpen] = useState(true);
 
-  // Persist selected recipes to localStorage
-  useEffect(() => {
-    localStorage.setItem('wizard_selectedRecipes', JSON.stringify(selectedRecipes));
-  }, [selectedRecipes]);
-
-  // Filter sections state
+  // Filter sidebar state
   const [filters, setFilters] = useState<FilterSection[]>([
     {
       id: 'dietary',
       label: 'Dietary',
-      appliedCount: 2,
+      appliedCount: 0,
       expanded: true,
       options: ['anti-candida', 'auto-immune', 'elimination', 'vegetarian', 'vegan', 'ketogenic', 'low fodmap', 'mediterranean', 'paleo', 'pescetarian', 'pureed'],
-      selectedOptions: ['low fodmap', 'mediterranean']
+      selectedOptions: []
     },
     {
       id: 'mealType',
@@ -66,9 +65,9 @@ const Step3ChooseRecipes: React.FC = () => {
     {
       id: 'cultural',
       label: 'Cultural',
-      appliedCount: 1,
+      appliedCount: 0,
       expanded: false,
-      options: [],
+      options: ['asian', 'italian', 'mexican', 'greek', 'indian', 'thai', 'french', 'spanish'],
       selectedOptions: []
     },
     {
@@ -81,16 +80,55 @@ const Step3ChooseRecipes: React.FC = () => {
     }
   ]);
 
-  const tabs = [
-    { id: 'browse', label: 'Browse' },
-    { id: 'recipebox', label: `Recipe Box (${selectedRecipes.length})` }
-  ];
+  // Filter chips state (for top bar) - meal times only
+  const [selectedMealTimes, setSelectedMealTimes] = useState<string[]>([]);
+
+  // Simulate loading delay for mock data with progress messages
+  useEffect(() => {
+    const messages = [
+      'Analyzing your preferences...',
+      'Filtering recipes...',
+      'Matching nutritional requirements...',
+      'Finding the best options...'
+    ];
+
+    let currentIndex = 0;
+    const messageTimer = setInterval(() => {
+      currentIndex = (currentIndex + 1) % messages.length;
+      setLoadingMessage(messages[currentIndex]);
+    }, 2500); // Change message every 2.5 seconds
+
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 10000); // 10 second delay
+
+    return () => {
+      clearInterval(messageTimer);
+      clearTimeout(loadingTimer);
+    };
+  }, []);
+
+  // Persist selected recipes to localStorage
+  useEffect(() => {
+    localStorage.setItem('wizard_selectedRecipes', JSON.stringify(selectedRecipes));
+  }, [selectedRecipes]);
+
+  // Meal time filter options (shown as chips)
+  const mealTimeOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Dessert'];
 
   const toggleRecipe = (recipeId: number) => {
     setSelectedRecipes(prev =>
       prev.includes(recipeId)
         ? prev.filter(id => id !== recipeId)
         : [...prev, recipeId]
+    );
+  };
+
+  const toggleMealTime = (mealTime: string) => {
+    setSelectedMealTimes(prev =>
+      prev.includes(mealTime)
+        ? prev.filter(m => m !== mealTime)
+        : [...prev, mealTime]
     );
   };
 
@@ -125,10 +163,6 @@ const Step3ChooseRecipes: React.FC = () => {
     })));
   };
 
-  const getTotalAppliedFilters = () => {
-    return filters.reduce((sum, filter) => sum + filter.appliedCount, 0);
-  };
-
   const handleCancel = () => {
     navigate('/nutrition');
   };
@@ -140,6 +174,67 @@ const Step3ChooseRecipes: React.FC = () => {
   const handlePrevious = () => {
     navigate('/wizard/step-2');
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-[#F8F9F9]">
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Top Bar - Nutrition Plan Assistant */}
+          <div className="bg-[#F0F2F3] flex items-center justify-center px-6 py-2 border-b border-[#C1C9CB]">
+            <div className="flex items-center gap-2">
+              <MagicWandIcon className="text-[#657A7E]" />
+              <p className="text-sm font-semibold text-[#244348]">Nutrition Plan Assistant</p>
+            </div>
+          </div>
+
+          {/* Loading Content */}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-6 px-6 py-8">
+              <AnimatedFruits className="w-32 h-36" />
+              <div className="flex flex-col items-center gap-1">
+                <h1 className="text-2xl font-bold text-[#01272E]">Finding recipes for your plan</h1>
+                <p className="text-base font-medium text-[#657A7E]">{loadingMessage}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Navigation */}
+          <div className="bg-[#F8F9F9] border-t border-[#C1C9CB] px-6 py-4 flex items-center justify-between">
+            {/* Cancel Button */}
+            <button
+              onClick={handleCancel}
+              className="px-4 py-2.5 rounded hover:bg-[#DFE3E4] transition-colors"
+            >
+              <p className="text-sm font-semibold text-[#01272E]">Cancel</p>
+            </button>
+
+            {/* Right Actions */}
+            <div className="flex items-center gap-2.5">
+              {/* Previous Button */}
+              <IconButton
+                onClick={handlePrevious}
+                variant="secondary"
+                size="md"
+                tooltip="Previous step"
+                icon={<span className="material-icons text-2xl">keyboard_arrow_left</span>}
+              />
+
+              {/* Next Button - Disabled during loading */}
+              <button
+                disabled
+                className="bg-[#657A7E] rounded h-10 flex items-center gap-1 px-2 pr-4 py-2.5 cursor-not-allowed opacity-60"
+              >
+                <span className="material-icons text-2xl text-white">keyboard_arrow_right</span>
+                <p className="text-sm font-semibold text-white">Next: Customize recipes</p>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-[#F8F9F9]">
@@ -157,239 +252,124 @@ const Step3ChooseRecipes: React.FC = () => {
         <div className="flex-1 flex overflow-hidden">
           {/* Main Content Area */}
           <div className="flex-1 overflow-y-auto flex justify-center">
-            <div className="w-full max-w-[900px] px-6 py-8 flex flex-col gap-6">
+            <div className="w-full max-w-225 px-6 py-8 flex flex-col gap-6">
               {/* Header */}
               <div className="flex flex-col gap-1">
-                <h1 className="text-2xl font-bold text-[#01272E]">Choose recipes</h1>
+                <h1 className="text-2xl font-bold text-[#01272E]">Build recipe collection</h1>
                 <p className="text-base font-medium text-[#657A7E]">
                   Pick at least 5 recipes to get started. We'll suggest similar ones to complete your plan.
                 </p>
               </div>
 
-              {/* Control Panel */}
+              {/* Tabs and Search Row */}
               <div className="flex items-end justify-between">
-                <div className="flex gap-2.5 items-center">
-                  <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
-                  {getTotalAppliedFilters() > 0 && (
-                    <div className="bg-[#FFFBEF] border border-[#A36624] rounded-full px-2 py-0.5">
-                      <p className="text-xs font-medium text-[#A36624] leading-normal">Exclusions applied</p>
-                    </div>
-                  )}
+                <div className="flex items-end gap-2">
+                  <Tabs
+                    tabs={[
+                      { id: 'best-matches', label: 'Best matches' },
+                      { id: 'added', label: `Added to collection (${selectedRecipes.length})` }
+                    ]}
+                    activeTab={activeTab}
+                    onChange={(tabId) => setActiveTab(tabId as 'best-matches' | 'added')}
+                  />
+                  {/* Exclusions Applied Tag */}
+                  <div className="mb-0.5">
+                    <Tag label="Exclusions applied" type="alert" alertVariant="warning" />
+                  </div>
                 </div>
+
                 <Search
-                  placeholder="Search recipes"
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                />
+                    placeholder="Search recipes"
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                  />
+              </div>
+
+              {/* Filter Chips Row */}
+              <div className="flex items-center gap-2">
+                {/* Meal Time Chips */}
+                {mealTimeOptions.map((mealTime) => (
+                  <Chip
+                    key={mealTime}
+                    label={mealTime}
+                    variant="no-icon"
+                    selected={selectedMealTimes.includes(mealTime)}
+                    onClick={() => toggleMealTime(mealTime)}
+                  />
+                ))}
+
+                {/* More filters button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsFiltersSideRailOpen(!isFiltersSideRailOpen)}
+                  className="focus:ring-0 focus:ring-offset-0"
+                >
+                  {isFiltersSideRailOpen ? 'Hide filters' : 'More filters'}
+                </Button>
               </div>
 
               {/* Recipe Grid */}
-              {activeTab === 'browse' && (
-                <div className="flex flex-col gap-6 pb-16">
-                  {/* Quick Snacks Section */}
-                  <div className="flex flex-col gap-4">
-                    <h2 className="text-lg font-bold text-[#01272E]">Quick snacks under 300 calories</h2>
-                    <div className="grid grid-cols-3 gap-4">
-                      {mockRecipes
-                        .filter(recipe =>
-                          recipe.tags.some(tag => tag.toLowerCase().includes('snack')) &&
-                          recipe.nutrition.calories < 300
-                        )
-                        .map((recipe) => (
-                    <RecipeDetailsPopover
-                      key={recipe.id}
-                      recipe={recipe}
-                      open={openPopoverId === recipe.id}
-                      onOpenChange={(open) => setOpenPopoverId(open ? recipe.id : null)}
-                      onActionClick={(recipe) => toggleRecipe(recipe.id)}
-                      isActionActive={selectedRecipes.includes(recipe.id)}
-                    >
-                      <RecipeCard
-                        recipe={recipe}
-                        isSelected={selectedRecipes.includes(recipe.id)}
-                        onToggle={toggleRecipe}
-                      />
-                    </RecipeDetailsPopover>
-                        ))}
-                    </div>
-                  </div>
+              <div className="flex flex-col gap-6 pb-16">
+                <div className="grid grid-cols-3 gap-4">
+                  {mockRecipes
+                    .filter(recipe => {
+                      // Filter by active tab
+                      if (activeTab === 'added') {
+                        return selectedRecipes.includes(recipe.id);
+                      }
 
-                  {/* Quick & Easy Meals Section */}
-                  <div className="flex flex-col gap-4">
-                    <h2 className="text-lg font-bold text-[#01272E]">Quick & easy meals</h2>
-                    <div className="grid grid-cols-3 gap-4">
-                      {mockRecipes
-                        .filter(recipe =>
-                          recipe.tags.some(tag => tag.toLowerCase().includes('quick')) &&
-                          !recipe.tags.some(tag => tag.toLowerCase().includes('snack'))
-                        )
-                        .map((recipe) => (
-                    <RecipeDetailsPopover
-                      key={recipe.id}
-                      recipe={recipe}
-                      open={openPopoverId === recipe.id}
-                      onOpenChange={(open) => setOpenPopoverId(open ? recipe.id : null)}
-                      onActionClick={(recipe) => toggleRecipe(recipe.id)}
-                      isActionActive={selectedRecipes.includes(recipe.id)}
-                    >
-                      <RecipeCard
-                        recipe={recipe}
-                        isSelected={selectedRecipes.includes(recipe.id)}
-                        onToggle={toggleRecipe}
-                      />
-                    </RecipeDetailsPopover>
-                        ))}
-                    </div>
-                  </div>
+                      // Apply meal time filters if any selected
+                      if (selectedMealTimes.length > 0) {
+                        const matchesMealTime = selectedMealTimes.some(mealTime =>
+                          recipe.tags?.some(tag => tag.toLowerCase().includes(mealTime.toLowerCase()))
+                        );
+                        if (!matchesMealTime) return false;
+                      }
 
-                  {/* High Protein Section */}
-                  <div className="flex flex-col gap-4">
-                    <h2 className="text-lg font-bold text-[#01272E]">High protein meals</h2>
-                    <div className="grid grid-cols-3 gap-4">
-                      {mockRecipes
-                        .filter(recipe => recipe.nutrition.protein >= 20)
-                        .map((recipe) => (
-                    <RecipeDetailsPopover
-                      key={recipe.id}
-                      recipe={recipe}
-                      open={openPopoverId === recipe.id}
-                      onOpenChange={(open) => setOpenPopoverId(open ? recipe.id : null)}
-                      onActionClick={(recipe) => toggleRecipe(recipe.id)}
-                      isActionActive={selectedRecipes.includes(recipe.id)}
-                    >
-                      <RecipeCard
-                        recipe={recipe}
-                        isSelected={selectedRecipes.includes(recipe.id)}
-                        onToggle={toggleRecipe}
-                      />
-                    </RecipeDetailsPopover>
-                        ))}
-                    </div>
-                  </div>
+                      // Apply search query
+                      if (searchQuery) {
+                        const query = searchQuery.toLowerCase();
+                        return recipe.title.toLowerCase().includes(query);
+                      }
 
-                  {/* All Other Recipes Section */}
-                  <div className="flex flex-col gap-4">
-                    <h2 className="text-lg font-bold text-[#01272E]">All recipes</h2>
-                    <div className="grid grid-cols-3 gap-4">
-                      {mockRecipes.map((recipe) => (
-                    <RecipeDetailsPopover
-                      key={recipe.id}
-                      recipe={recipe}
-                      open={openPopoverId === recipe.id}
-                      onOpenChange={(open) => setOpenPopoverId(open ? recipe.id : null)}
-                      onActionClick={(recipe) => toggleRecipe(recipe.id)}
-                      isActionActive={selectedRecipes.includes(recipe.id)}
-                    >
-                      <RecipeCard
+                      return true;
+                    })
+                    .map((recipe) => (
+                      <RecipeDetailsPopover
+                        key={recipe.id}
                         recipe={recipe}
-                        isSelected={selectedRecipes.includes(recipe.id)}
-                        onToggle={toggleRecipe}
-                      />
-                    </RecipeDetailsPopover>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Recipe Box View */}
-              {activeTab === 'recipebox' && (
-                <>
-                  {selectedRecipes.length === 0 ? (
-                    /* Empty State */
-                    <div className="bg-white border border-[#C1C9CB] rounded-lg p-8 flex flex-col gap-4.5 items-center">
-                      <div className="flex flex-col gap-1 items-center text-center">
-                        <p className="text-base font-semibold text-[#244348] leading-normal">
-                          Your recipe box is empty
-                        </p>
-                        <p className="text-sm font-medium text-[#657A7E] leading-[1.4]">
-                          Choose recipes from Browse and they'll appear here.
-                        </p>
-                      </div>
-                      <Button
-                        variant="secondary"
-                        onClick={() => setActiveTab('browse')}
+                        open={openPopoverId === recipe.id}
+                        onOpenChange={(open) => setOpenPopoverId(open ? recipe.id : null)}
+                        onActionClick={(recipe) => toggleRecipe(recipe.id)}
+                        isActionActive={selectedRecipes.includes(recipe.id)}
                       >
-                        Browse recipes
-                      </Button>
-                    </div>
-                  ) : (
-                    /* Recipe Grid */
-                    <div className="grid grid-cols-3 gap-4 pb-16">
-                      {mockRecipes
-                        .filter(recipe => selectedRecipes.includes(recipe.id))
-                        .map((recipe) => (
-                          <RecipeDetailsPopover
-                            key={recipe.id}
-                            recipe={recipe}
-                            open={openPopoverId === recipe.id}
-                            onOpenChange={(open) => setOpenPopoverId(open ? recipe.id : null)}
-                            onActionClick={(recipe) => toggleRecipe(recipe.id)}
-                            isActionActive={selectedRecipes.includes(recipe.id)}
-                          >
-                            <div className="bg-white border border-[#DFE3E4] rounded-lg overflow-hidden flex flex-col cursor-pointer hover:shadow-md transition-shadow">
-                              {/* Recipe Image */}
-                              <div className="w-full h-32 bg-[#F0F2F3] border-b border-[#DFE3E4] overflow-hidden">
-                                {recipe.image && (
-                                  <img
-                                    src={recipe.image}
-                                    alt={recipe.title}
-                                    className="w-full h-full object-cover"
-                                  />
-                                )}
-                              </div>
-
-                              {/* Recipe Content */}
-                              <div className="p-3 flex flex-col gap-2">
-                                {/* Content Area - Title and Metadata */}
-                                <div className="flex flex-col gap-1">
-                                  <p className="text-sm font-semibold text-[#244348] leading-[1.4] line-clamp-2">
-                                    {recipe.title}
-                                  </p>
-                                  <div className="flex flex-wrap gap-x-2 gap-y-1 items-center">
-                                    <div className="flex gap-0.5 items-center">
-                                      <span className="material-icons-outlined text-[#657A7E]" style={{ fontSize: '16px' }}>schedule</span>
-                                      <span className="text-xs font-medium text-[#657A7E] leading-normal">
-                                        {recipe.time}
-                                      </span>
-                                    </div>
-                                    <div className="flex gap-0.5 items-center">
-                                      <IngredientIcon className="text-[#657A7E]" />
-                                      <span className="text-xs font-medium text-[#657A7E] leading-normal">
-                                        {recipe.ingredients} ingredients
-                                      </span>
-                                    </div>
-                                  </div>
-                                </div>
-                                {/* Action Area - Button */}
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    toggleRecipe(recipe.id);
-                                  }}
-                                  className="border border-[#385459] bg-[#385459] text-white rounded flex items-center justify-center gap-1 px-2 pr-3.5 py-1.5 transition-colors hover:bg-[#244348]"
-                                >
-                                  <span className="material-icons text-xl text-white">done</span>
-                                  <span className="text-sm font-semibold text-white leading-[1.4]">Added</span>
-                                </button>
-                              </div>
-                            </div>
-                          </RecipeDetailsPopover>
-                        ))}
-                    </div>
-                  )}
-                </>
-              )}
+                        <RecipeCard
+                          recipe={{
+                            ...recipe,
+                            calories: recipe.nutrition?.calories,
+                            tags: recipe.tags
+                          }}
+                          isSelected={selectedRecipes.includes(recipe.id)}
+                          onToggle={toggleRecipe}
+                          showCalories={false}
+                        />
+                      </RecipeDetailsPopover>
+                    ))}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Filters Sidebar */}
-          <FiltersSideRail
-            filters={filters}
-            onToggleFilter={toggleFilterOption}
-            onToggleExpanded={toggleFilterExpanded}
-            onClearAll={clearAllFilters}
-          />
+          {isFiltersSideRailOpen && (
+            <FiltersSideRail
+              filters={filters}
+              onToggleFilter={toggleFilterOption}
+              onToggleExpanded={toggleFilterExpanded}
+              onClearAll={clearAllFilters}
+            />
+          )}
         </div>
 
         {/* Bottom Navigation */}

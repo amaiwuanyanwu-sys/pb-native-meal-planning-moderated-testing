@@ -148,7 +148,7 @@ const Step2AllergensExclusions: React.FC = () => {
               className="bg-[#01272E] rounded h-10 flex items-center gap-1 px-2 pr-4 py-2.5 hover:bg-[#244348] transition-colors"
             >
               <span className="material-icons text-2xl text-white">keyboard_arrow_right</span>
-              <p className="text-sm font-semibold text-white">Next: Choose recipes</p>
+              <p className="text-sm font-semibold text-white">Next: Build recipe collection</p>
             </button>
           </div>
         </div>
