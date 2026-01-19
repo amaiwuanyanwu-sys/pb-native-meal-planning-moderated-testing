@@ -51,6 +51,22 @@ const MealPlanView: React.FC = () => {
   // Recipe popover state
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
 
+  // Handler for clearing all meals
+  const handleClearAll = () => {
+    if (!plan) return;
+
+    const updatedPlan = {
+      ...plan,
+      mealPlan: {
+        ...plan.mealPlan,
+        meals: []
+      }
+    };
+
+    setPlan(updatedPlan);
+    updatePlan(updatedPlan);
+  };
+
   // Handler for dropping a recipe into a meal slot
   const handleRecipeDrop = (day: number, mealTime: string, recipeId: number, sourceDay?: number, sourceMealTime?: string) => {
     if (!plan) return;
@@ -284,7 +300,7 @@ const MealPlanView: React.FC = () => {
           {/* Right: Actions */}
           <div className="flex items-center gap-4">
             {/* Clear Button */}
-            <Button variant="ghost" size="md">
+            <Button variant="ghost" size="md" onClick={handleClearAll}>
               Clear
             </Button>
 
