@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 interface DroppableSlotProps {
   day: number;
   mealTime: 'breakfast' | 'snack' | 'lunch' | 'dinner';
-  onDrop: (day: number, mealTime: string, recipeId: number) => void;
+  onDrop: (day: number, mealTime: string, recipeId: number, sourceDay?: number, sourceMealTime?: string) => void;
   className?: string;
 }
 
@@ -34,7 +34,12 @@ export const DroppableSlot: React.FC<DroppableSlotProps> = ({
     try {
       const data = JSON.parse(e.dataTransfer.getData('application/json'));
       if (data.recipeId) {
-        onDrop(day, mealTime, data.recipeId);
+        // Check if it's from the planner (has source location) or from the recipe list
+        if (data.isFromPlanner && data.sourceDay !== undefined && data.sourceMealTime) {
+          onDrop(day, mealTime, data.recipeId, data.sourceDay, data.sourceMealTime);
+        } else {
+          onDrop(day, mealTime, data.recipeId);
+        }
       }
     } catch (error) {
       console.error('Failed to parse drop data:', error);
