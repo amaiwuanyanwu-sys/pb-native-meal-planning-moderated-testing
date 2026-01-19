@@ -9,6 +9,7 @@ interface TagProps {
   type?: 'alert' | 'informational';
   alertVariant?: AlertVariant;
   accentColor?: AccentColor;
+  icon?: React.ReactNode;
   className?: string;
 }
 
@@ -17,6 +18,7 @@ export const Tag: React.FC<TagProps> = ({
   type = 'informational',
   alertVariant = 'info',
   accentColor = 'default',
+  icon,
   className,
 }) => {
   // Alert variant styles - using complete class strings for Tailwind detection
@@ -53,6 +55,7 @@ export const Tag: React.FC<TagProps> = ({
       )}
       style={type === 'alert' ? { borderWidth: '1px' } : undefined}
     >
+      {icon}
       {label}
     </span>
   );

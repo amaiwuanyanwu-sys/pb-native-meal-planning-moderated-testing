@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface TooltipProps {
   content: string;
@@ -8,20 +8,36 @@ interface TooltipProps {
 
 export const Tooltip: React.FC<TooltipProps> = ({ content, children, position = 'right' }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isVisible && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setTooltipPosition({
+        top: rect.top + rect.height / 2,
+        left: position === 'right' ? rect.right + 8 : rect.left - 8
+      });
+    }
+  }, [isVisible, position]);
 
   return (
-    <div
-      style={{ position: 'relative', display: 'block', width: '100%' }}
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
-    >
-      {children}
+    <>
+      <div
+        ref={containerRef}
+        style={{ position: 'relative', display: 'block', width: '100%' }}
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+      >
+        {children}
+      </div>
       {isVisible && (
         <div
           style={{
-            position: 'absolute',
-            ...(position === 'right' ? { left: '100%', marginLeft: '8px' } : { right: '100%', marginRight: '8px' }),
-            top: '50%',
+            position: 'fixed',
+            left: position === 'right' ? tooltipPosition.left : 'auto',
+            right: position === 'left' ? `calc(100vw - ${tooltipPosition.left}px)` : 'auto',
+            top: tooltipPosition.top,
             transform: 'translateY(-50%)',
             padding: '4px 8px',
             background: '#244348',
@@ -29,7 +45,7 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children, position = 
             fontSize: '12px',
             borderRadius: '4px',
             whiteSpace: 'nowrap',
-            zIndex: 1000,
+            zIndex: 9999,
             pointerEvents: 'none'
           }}
         >
@@ -52,6 +68,6 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children, position = 
           />
         </div>
       )}
-    </div>
+    </>
   );
 };

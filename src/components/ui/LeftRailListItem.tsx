@@ -10,10 +10,12 @@ interface LeftRailListItemProps {
 export const LeftRailListItem: React.FC<LeftRailListItemProps> = ({
   label,
   icon,
-  isActive = false
+  isActive = false,
+  onClick
 }) => {
   return (
     <div
+      onClick={onClick}
       style={{
         padding: '8px 16px',
         background: isActive ? '#01272e' : 'transparent',
@@ -27,7 +29,8 @@ export const LeftRailListItem: React.FC<LeftRailListItemProps> = ({
         alignItems: 'center',
         gap: '8px',
         transition: 'all 0.2s',
-        fontFamily: 'inherit'
+        fontFamily: 'inherit',
+        cursor: onClick ? 'pointer' : 'default'
       }}
     >
       {icon && (

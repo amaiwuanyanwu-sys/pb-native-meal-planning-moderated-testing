@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   MdOutlineRestaurant,
@@ -10,17 +10,25 @@ import {
 import { LeftRailListItem } from '@/components/ui/LeftRailListItem';
 import { RailToggle } from '@/components/ui/RailToggle';
 import { Tooltip } from '@/components/ui/Tooltip';
+import { DashboardIcon } from '@/components/icons/DashboardIcon';
+import { Avatar } from '@/components/ui/Avatar';
 
 interface RecentItem {
   id: string;
   label: string;
   path: string;
+  type?: 'client' | 'template';
+  avatarInitials?: string;
+  avatarBgColor?: string;
+  templateIconBgColor?: string;
+  templateIconColor?: string;
 }
 
 interface LeftSideRailProps {
   recentItems?: RecentItem[];
   onRecentItemClick?: (item: RecentItem) => void;
   className?: string;
+  defaultCollapsed?: boolean;
 }
 
 // Custom Nutrition Icon (not available in react-icons)
@@ -32,24 +40,27 @@ const NutritionIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 export const LeftSideRail: React.FC<LeftSideRailProps> = ({
   recentItems = [],
-  className
+  onRecentItemClick,
+  className,
+  defaultCollapsed = false
 }) => {
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const handleToggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
 
   const menuItems = [
-    { label: 'Nutrition Plans', icon: <NutritionIcon />, path: '/nutrition/plans' },
-    { label: 'Recipes', icon: <MdOutlineRestaurant size={24} />, path: '/nutrition/recipes' },
-    { label: 'Supplements', icon: <MdOutlineMedication size={24} />, path: '/nutrition/supplements' },
-    { label: 'Food Database', icon: <MdOutlineShoppingCart size={24} />, path: '/nutrition/food-database' }
+    { label: 'Nutrition Plans', icon: <NutritionIcon />, path: '/nutrition', disabled: false },
+    { label: 'Recipes', icon: <MdOutlineRestaurant size={24} />, path: '/nutrition/recipes', disabled: true },
+    { label: 'Supplements', icon: <MdOutlineMedication size={24} />, path: '/nutrition/supplements', disabled: true },
+    { label: 'Food Database', icon: <MdOutlineShoppingCart size={24} />, path: '/nutrition/food-database', disabled: true }
   ];
 
   const isMenuItemActive = (path: string) => {
-    return location.pathname === path || (path === '/nutrition/plans' && location.pathname === '/nutrition');
+    return location.pathname === path;
   };
 
   return (
@@ -73,6 +84,7 @@ export const LeftSideRail: React.FC<LeftSideRailProps> = ({
             <div key={item.path} style={{ width: '100%' }}>
               <Tooltip content={item.label}>
                 <div
+                  onClick={() => !item.disabled && navigate(item.path)}
                   style={{
                     padding: '8px 0',
                     background: isMenuItemActive(item.path) ? '#01272e' : 'transparent',
@@ -80,7 +92,8 @@ export const LeftSideRail: React.FC<LeftSideRailProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    cursor: item.disabled ? 'default' : 'pointer'
                   }}
                 >
                   <span style={{
@@ -99,6 +112,7 @@ export const LeftSideRail: React.FC<LeftSideRailProps> = ({
               label={item.label}
               icon={item.icon}
               isActive={isMenuItemActive(item.path)}
+              onClick={item.disabled ? undefined : () => navigate(item.path)}
             />
           )
         ))}
@@ -113,14 +127,52 @@ export const LeftSideRail: React.FC<LeftSideRailProps> = ({
             </h3>
           </div>
           <div className="w-full">
-            {recentItems.map((item) => (
-              <LeftRailListItem
-                key={item.id}
-                label={item.label}
-                icon={<MdOutlineDescription size={24} />}
-                isActive={location.pathname === item.path}
-              />
-            ))}
+            {recentItems.map((item) => {
+              // Determine icon based on type
+              const getIcon = () => {
+                if (item.type === 'template') {
+                  return (
+                    <div
+                      className="w-6 h-6 rounded flex items-center justify-center"
+                      style={{ backgroundColor: item.templateIconBgColor || '#CFF6DC' }}
+                    >
+                      <DashboardIcon
+                        size={16}
+                        color={item.templateIconColor || '#007820'}
+                      />
+                    </div>
+                  );
+                } else if (item.type === 'client' && item.avatarInitials) {
+                  return (
+                    <div
+                      className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden"
+                      style={{ backgroundColor: item.avatarBgColor || '#657A7E' }}
+                    >
+                      <Avatar
+                        fillType="initials"
+                        size="small"
+                        initials={item.avatarInitials}
+                        className="bg-transparent"
+                      />
+                    </div>
+                  );
+                }
+                return <MdOutlineDescription size={24} />;
+              };
+
+              return (
+                <LeftRailListItem
+                  key={item.id}
+                  label={item.label}
+                  icon={getIcon()}
+                  isActive={location.pathname === item.path || location.pathname.startsWith(item.path + '/')}
+                  onClick={() => {
+                    navigate(item.path);
+                    onRecentItemClick?.(item);
+                  }}
+                />
+              );
+            })}
           </div>
         </>
       )}
@@ -128,31 +180,70 @@ export const LeftSideRail: React.FC<LeftSideRailProps> = ({
       {/* Recents Section - Collapsed */}
       {recentItems.length > 0 && isCollapsed && (
         <div className="w-full flex flex-col">
-          {recentItems.map((item) => (
-            <div key={item.id} style={{ width: '100%' }}>
-              <Tooltip content={item.label}>
-                <div
-                  style={{
-                    padding: '8px 0',
-                    background: location.pathname === item.path ? '#01272e' : 'transparent',
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <span style={{
-                    color: location.pathname === item.path ? 'white' : '#657a7e',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}>
-                    <MdOutlineDescription size={24} />
-                  </span>
-                </div>
-              </Tooltip>
-            </div>
-          ))}
+          {recentItems.map((item) => {
+            // Determine icon based on type for collapsed view
+            const getCollapsedIcon = () => {
+              if (item.type === 'template') {
+                return (
+                  <div
+                    className="w-6 h-6 rounded flex items-center justify-center"
+                    style={{ backgroundColor: item.templateIconBgColor || '#CFF6DC' }}
+                  >
+                    <DashboardIcon
+                      size={16}
+                      color={item.templateIconColor || '#007820'}
+                    />
+                  </div>
+                );
+              } else if (item.type === 'client' && item.avatarInitials) {
+                return (
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden"
+                    style={{ backgroundColor: item.avatarBgColor || '#657A7E' }}
+                  >
+                    <Avatar
+                      fillType="initials"
+                      size="small"
+                      initials={item.avatarInitials}
+                      className="bg-transparent"
+                    />
+                  </div>
+                );
+              }
+              return <MdOutlineDescription size={24} />;
+            };
+
+            return (
+              <div key={item.id} style={{ width: '100%' }}>
+                <Tooltip content={item.label}>
+                  <div
+                    onClick={() => {
+                      navigate(item.path);
+                      onRecentItemClick?.(item);
+                    }}
+                    style={{
+                      padding: '8px 0',
+                      background: (location.pathname === item.path || location.pathname.startsWith(item.path + '/')) ? '#01272e' : 'transparent',
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <span style={{
+                      color: (location.pathname === item.path || location.pathname.startsWith(item.path + '/')) ? 'white' : '#657a7e',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}>
+                      {getCollapsedIcon()}
+                    </span>
+                  </div>
+                </Tooltip>
+              </div>
+            );
+          })}
         </div>
       )}
     </aside>

@@ -16,11 +16,11 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   ...props
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none';
+  const baseStyles = 'inline-flex items-center justify-center font-semibold transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none';
 
   const variants = {
-    primary: 'bg-[#01272E] text-white hover:bg-[#385459] focus:ring-[#01272E]',
-    secondary: 'bg-white border border-[#01272E] text-[#01272E] hover:bg-[#F0F2F3] focus:ring-[#01272E]',
+    primary: 'bg-[#01272E] text-white hover:bg-[#385459]',
+    secondary: 'bg-white border border-[#01272E] text-[#01272E] hover:bg-[#F0F2F3]',
     ghost: 'bg-transparent hover:bg-[#F0F2F3] text-[#01272E]',
     link: 'bg-transparent text-[#657A7E] hover:text-[#01272E] underline-offset-4 hover:underline'
   };

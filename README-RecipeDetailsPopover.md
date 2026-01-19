@@ -179,7 +179,7 @@ The component has been integrated into [Step4ChooseRecipes.tsx](src/pages/wizard
 - Clicking a recipe card opens the popover
 - The "Add" button in the popover adds/removes the recipe from selection
 - The bottom "Add" button on the card also works independently
-- Both Browse and Recipe Box views use the same popover
+- Both Browse and Recipe Collection views use the same popover
 
 ## Files
 

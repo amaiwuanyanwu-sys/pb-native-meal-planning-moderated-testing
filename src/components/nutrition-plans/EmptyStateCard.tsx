@@ -41,7 +41,7 @@ export const EmptyStateCard: React.FC = () => {
         <div className="flex items-center gap-2">
           <span className="material-icons text-[#244348] text-2xl">grid_view</span>
           <h2 className="text-sm font-semibold text-[#244348]">
-            Create your first nutrition plan
+            Get started
           </h2>
         </div>
       </div>
@@ -62,13 +62,13 @@ export const EmptyStateCard: React.FC = () => {
             {features.map((feature, index) => (
               <div key={index} className="flex items-center gap-3 py-2">
                 <div className="bg-[#F0F2F3] p-2 rounded flex items-center justify-center w-10 h-10 shrink-0">
-                  <span className="material-icons text-[#244348] text-2xl">{feature.icon}</span>
+                  <span className="material-icons text-[#385459] text-2xl">{feature.icon}</span>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-[#244348] leading-[1.4]">
+                  <h3 className="text-sm font-semibold text-[#385459] leading-[1.4]">
                     {feature.title}
                   </h3>
-                  <p className="text-xs font-medium text-[#657A7E] leading-normal">
+                  <p className="text-xs font-medium text-[#385459] leading-normal">
                     {feature.description}
                   </p>
                 </div>
@@ -78,7 +78,7 @@ export const EmptyStateCard: React.FC = () => {
 
           {/* CTA Button */}
           <Button variant="primary" size="lg" className="w-full h-10" onClick={handleGetStarted}>
-            Get started
+            Create a nutrition plan
           </Button>
         </div>
       </div>

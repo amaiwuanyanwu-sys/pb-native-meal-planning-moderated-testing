@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MagicWandIcon } from '@/components/icons/MagicWandIcon';
 import { IconButton } from '@/components/ui/IconButton';
 import { Chip } from '@/components/ui/Chip';
+import { WizardLayout } from '@/components/wizard/WizardLayout';
+import { WizardHeader } from '@/components/wizard/WizardHeader';
 
 const foodPreferences = {
   dietary: [
@@ -45,7 +46,24 @@ const foodPreferences = {
 
 const Step1FoodPreferences: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
+
+  // Load saved preferences from localStorage
+  const [selectedPreferences, setSelectedPreferences] = useState<string[]>(() => {
+    const stored = localStorage.getItem('wizard_foodPreferences');
+    if (!stored) return [];
+    try {
+      const prefs = JSON.parse(stored);
+      return [...prefs.dietary, ...prefs.cultural, ...prefs.effort];
+    } catch {
+      return [];
+    }
+  });
+
+  // Load completed steps from localStorage
+  const [completedSteps, setCompletedSteps] = useState<string[]>(() => {
+    const stored = localStorage.getItem('wizard_completedSteps');
+    return stored ? JSON.parse(stored) : [];
+  });
 
   const togglePreference = (preference: string) => {
     setSelectedPreferences(prev =>
@@ -60,6 +78,17 @@ const Step1FoodPreferences: React.FC = () => {
   };
 
   const handleNext = () => {
+    // Mark this step as completed
+    const updatedCompleted = [...new Set([...completedSteps, 'food-preferences'])];
+    localStorage.setItem('wizard_completedSteps', JSON.stringify(updatedCompleted));
+
+    // Save food preferences to localStorage
+    localStorage.setItem('wizard_foodPreferences', JSON.stringify({
+      dietary: selectedPreferences.filter(p => foodPreferences.dietary.includes(p)),
+      cultural: selectedPreferences.filter(p => foodPreferences.cultural.includes(p)),
+      effort: selectedPreferences.filter(p => foodPreferences.effort.includes(p)),
+    }));
+
     navigate('/wizard/step-2');
   };
 
@@ -68,16 +97,10 @@ const Step1FoodPreferences: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#F8F9F9]">
+    <WizardLayout currentStep="food-preferences" completedSteps={completedSteps as any}>
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar - Nutrition Plan Assistant */}
-        <div className="bg-[#F0F2F3] flex items-center justify-center px-6 py-2 border-b border-[#C1C9CB]">
-          <div className="flex items-center gap-2">
-            <MagicWandIcon className="text-[#657A7E]" />
-            <p className="text-sm font-semibold text-[#244348]">Nutrition Plan Assistant</p>
-          </div>
-        </div>
+        <WizardHeader />
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto flex justify-center">
@@ -172,7 +195,7 @@ const Step1FoodPreferences: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </WizardLayout>
   );
 };
 

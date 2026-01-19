@@ -217,7 +217,7 @@ export const mockRecipes: Recipe[] = [
     time: '3 mins',
     ingredients: 2,
     image: '/src/assets/Recipe Images/dates-apple.jpg',
-    tags: ['Vegan', 'Snack', 'Natural sweetener'],
+    tags: ['Vegan', 'Snack'],
     ingredientsList: [
       { amount: '3', name: 'Medjool Dates (pitted)' },
       { amount: '1', name: 'Apple (sliced)' },
@@ -1041,7 +1041,7 @@ export const mockRecipes: Recipe[] = [
     time: '10 mins',
     ingredients: 5,
     image: '/src/assets/Recipe Images/watermelon-feta-mini-skewers.jpg',
-    tags: ['Vegetarian', 'Appetizer', 'Summer'],
+    tags: ['Vegetarian', 'Appetizer'],
     ingredientsList: [
       { amount: '2 cups', name: 'Watermelon (cubed)' },
       { amount: '1 cup', name: 'Feta Cheese (cubed)' },

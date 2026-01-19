@@ -13,15 +13,26 @@ import type { FilterSection } from '@/components/layout/FiltersSideRail';
 import { AnimatedFruits } from '@/components/ui/AnimatedFruits';
 import { Tabs } from '@/components/ui/Tabs';
 import { Tag } from '@/components/ui/Tag';
+import { WizardLayout } from '@/components/wizard/WizardLayout';
+import { WizardHeader } from '@/components/wizard/WizardHeader';
 
 const Step3ChooseRecipes: React.FC = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
+  // Check if recipes have already been loaded (skip loading animation if returning to this step)
+  const [isLoading, setIsLoading] = useState(() => {
+    const hasLoaded = localStorage.getItem('wizard_step3_loaded');
+    return !hasLoaded;
+  });
   const [loadingMessage, setLoadingMessage] = useState('Analyzing your preferences...');
   // Load selected recipes from localStorage or use default
   const [selectedRecipes, setSelectedRecipes] = useState<number[]>(() => {
     const stored = localStorage.getItem('wizard_selectedRecipes');
-    return stored ? JSON.parse(stored) : [2, 6];
+    return stored ? JSON.parse(stored) : [];
+  });
+  // Load completed steps from localStorage
+  const [completedSteps] = useState<string[]>(() => {
+    const stored = localStorage.getItem('wizard_completedSteps');
+    return stored ? JSON.parse(stored) : [];
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
@@ -30,12 +41,20 @@ const Step3ChooseRecipes: React.FC = () => {
 
   // Filter sidebar state
   const [filters, setFilters] = useState<FilterSection[]>([
+    // {
+    //   id: 'dietary',
+    //   label: 'Dietary',
+    //   appliedCount: 0,
+    //   expanded: true,
+    //   options: ['anti-candida', 'auto-immune', 'elimination', 'vegetarian', 'vegan', 'ketogenic', 'low fodmap', 'mediterranean', 'paleo', 'pescetarian', 'pureed'],
+    //   selectedOptions: []
+    // },
     {
-      id: 'dietary',
-      label: 'Dietary',
+      id: 'mealTime',
+      label: 'Meal time',
       appliedCount: 0,
       expanded: true,
-      options: ['anti-candida', 'auto-immune', 'elimination', 'vegetarian', 'vegan', 'ketogenic', 'low fodmap', 'mediterranean', 'paleo', 'pescetarian', 'pureed'],
+      options: ['breakfast', 'lunch', 'dinner', 'snack', 'side', 'appetizer', 'dessert'],
       selectedOptions: []
     },
     {
@@ -44,14 +63,6 @@ const Step3ChooseRecipes: React.FC = () => {
       appliedCount: 0,
       expanded: true,
       options: ['burger', 'cookie', 'dressing', 'drink', 'juice', 'meal prep', 'muffin', 'pancake', 'pasta', 'salad'],
-      selectedOptions: []
-    },
-    {
-      id: 'mealTime',
-      label: 'Meal time',
-      appliedCount: 0,
-      expanded: true,
-      options: ['breakfast', 'lunch', 'dinner', 'snack', 'side', 'appetizer', 'dessert'],
       selectedOptions: []
     },
     {
@@ -85,6 +96,9 @@ const Step3ChooseRecipes: React.FC = () => {
 
   // Simulate loading delay for mock data with progress messages
   useEffect(() => {
+    // Only run loading animation if we haven't loaded before
+    if (!isLoading) return;
+
     const messages = [
       'Analyzing your preferences...',
       'Filtering recipes...',
@@ -100,13 +114,15 @@ const Step3ChooseRecipes: React.FC = () => {
 
     const loadingTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 10000); // 10 second delay
+      // Mark that we've loaded step 3
+      localStorage.setItem('wizard_step3_loaded', 'true');
+    }, 5000); // 10 second delay
 
     return () => {
       clearInterval(messageTimer);
       clearTimeout(loadingTimer);
     };
-  }, []);
+  }, [isLoading]);
 
   // Persist selected recipes to localStorage
   useEffect(() => {
@@ -168,6 +184,9 @@ const Step3ChooseRecipes: React.FC = () => {
   };
 
   const handleNext = () => {
+    // Mark this step as completed
+    const updatedCompleted = [...new Set([...completedSteps, 'choose-recipes'])];
+    localStorage.setItem('wizard_completedSteps', JSON.stringify(updatedCompleted));
     navigate('/wizard/step-4');
   };
 
@@ -227,7 +246,7 @@ const Step3ChooseRecipes: React.FC = () => {
                 className="bg-[#657A7E] rounded h-10 flex items-center gap-1 px-2 pr-4 py-2.5 cursor-not-allowed opacity-60"
               >
                 <span className="material-icons text-2xl text-white">keyboard_arrow_right</span>
-                <p className="text-sm font-semibold text-white">Next: Customize recipes</p>
+                <p className="text-sm font-semibold text-white">Next: Choose recipes</p>
               </button>
             </div>
           </div>
@@ -237,16 +256,10 @@ const Step3ChooseRecipes: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-[#F8F9F9]">
+    <WizardLayout currentStep="choose-recipes" completedSteps={completedSteps as any}>
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar - Nutrition Plan Assistant */}
-        <div className="bg-[#F0F2F3] flex items-center justify-center px-6 py-2 border-b border-[#C1C9CB]">
-          <div className="flex items-center gap-2">
-            <MagicWandIcon className="text-[#657A7E]" />
-            <p className="text-sm font-semibold text-[#244348]">Nutrition Plan Assistant</p>
-          </div>
-        </div>
+        <WizardHeader />
 
         {/* Content Area with Sidebar */}
         <div className="flex-1 flex overflow-hidden">
@@ -404,7 +417,7 @@ const Step3ChooseRecipes: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+    </WizardLayout>
   );
 };
 

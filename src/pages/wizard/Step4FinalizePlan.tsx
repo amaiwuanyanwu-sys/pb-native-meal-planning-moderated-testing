@@ -10,6 +10,10 @@ import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { AnimatedFruits } from '@/components/ui/AnimatedFruits';
 import { mockRecipes } from '@/data/mockRecipes';
 import { mockUsers } from '@/data/mockUsers';
+import { WizardLayout } from '@/components/wizard/WizardLayout';
+import { WizardHeader } from '@/components/wizard/WizardHeader';
+import { savePlan, generatePlanId, generateMealPlan } from '@/data/mockNutritionPlans';
+import type { NutritionPlan } from '@/data/mockNutritionPlans';
 
 const Step4FinalizePlan: React.FC = () => {
   const navigate = useNavigate();
@@ -19,6 +23,12 @@ const Step4FinalizePlan: React.FC = () => {
   const [mealPlanChoice, setMealPlanChoice] = useState<'no' | 'yes'>('no');
   const [selectedUserId, setSelectedUserId] = useState('');
   const [templateName, setTemplateName] = useState('');
+
+  // Load completed steps from localStorage
+  const [completedSteps] = useState<string[]>(() => {
+    const stored = localStorage.getItem('wizard_completedSteps');
+    return stored ? JSON.parse(stored) : [];
+  });
 
   // Meal plan structure state
   const [mealPlanStructure, setMealPlanStructure] = useState<'structured' | 'simple'>('structured');
@@ -58,7 +68,11 @@ const Step4FinalizePlan: React.FC = () => {
   // Clear wizard data from localStorage
   const clearWizardData = () => {
     localStorage.removeItem('wizard_selectedRecipes');
-    // Add more wizard-related keys here as needed
+    localStorage.removeItem('wizard_foodPreferences');
+    localStorage.removeItem('wizard_allergens');
+    localStorage.removeItem('wizard_allergensDescription');
+    localStorage.removeItem('wizard_completedSteps');
+    localStorage.removeItem('wizard_step3_loaded');
   };
 
   const handleCancel = () => {
@@ -71,8 +85,70 @@ const Step4FinalizePlan: React.FC = () => {
   };
 
   const handleFinalize = () => {
+    // Load all wizard data from localStorage
+    const storedPreferences = localStorage.getItem('wizard_foodPreferences');
+    const foodPreferences = storedPreferences
+      ? JSON.parse(storedPreferences)
+      : { dietary: [], cultural: [], effort: [] };
+
+    const storedAllergens = localStorage.getItem('wizard_allergens');
+    const allergens = storedAllergens ? JSON.parse(storedAllergens) : [];
+
+    const allergensDescription = localStorage.getItem('wizard_allergensDescription') || '';
+
+    const storedRecipeIds = localStorage.getItem('wizard_selectedRecipes');
+    const recipeIds = storedRecipeIds ? JSON.parse(storedRecipeIds) : [];
+
+    // Create nutrition plan object
+    const nutritionPlan: NutritionPlan = {
+      id: generatePlanId(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      type: activeTab === 'client' ? 'client' : 'template',
+
+      // Metadata
+      ...(activeTab === 'client' && selectedUserId ? { clientId: selectedUserId } : {}),
+      ...(activeTab === 'template' && templateName ? { templateName } : {}),
+
+      // Wizard data
+      preferences: foodPreferences,
+      exclusions: {
+        allergens,
+        customDescription: allergensDescription || undefined,
+      },
+      recipeIds,
+
+      // Meal plan configuration
+      mealPlan: {
+        includesMealPlan: mealPlanChoice === 'yes',
+        ...(mealPlanChoice === 'yes' ? {
+          structure: mealPlanStructure,
+          nutritionTargets: {
+            calories: parseInt(calories.replace(/,/g, '')) || 0,
+            protein: parseInt(protein) || 0,
+            carbs: parseInt(carbs) || 0,
+            fat: parseInt(fat) || 0,
+            fiber: parseInt(fiber) || 0,
+          },
+          importance,
+          meals: generateMealPlan(recipeIds, mealPlanStructure),
+        } : {}),
+      },
+    };
+
+    // Save to localStorage
+    savePlan(nutritionPlan);
+
+    // Store the created plan info for navigation
+    localStorage.setItem('wizard_createdPlan', JSON.stringify({
+      id: nutritionPlan.id,
+      type: nutritionPlan.type,
+      clientId: nutritionPlan.clientId,
+    }));
+
+    // Start loading animation
     setIsCreatingPlan(true);
-    setLoadingStep(1); // Start at step 1 immediately
+    setLoadingStep(1);
   };
 
   // Handle loading progression
@@ -96,10 +172,22 @@ const Step4FinalizePlan: React.FC = () => {
           if (currentStepIndex < loadingSteps.length) {
             progressToNextStep();
           } else {
-            // All steps complete, navigate to nutrition plans
+            // All steps complete, navigate to the created plan view
             setTimeout(() => {
+              const createdPlanInfo = localStorage.getItem('wizard_createdPlan');
+              let navigationPath = '/nutrition';
+
+              if (createdPlanInfo) {
+                const planInfo = JSON.parse(createdPlanInfo);
+
+                // Navigate to the plan view page
+                navigationPath = `/nutrition/plans/${planInfo.id}`;
+
+                localStorage.removeItem('wizard_createdPlan');
+              }
+
               clearWizardData();
-              navigate('/nutrition');
+              navigate(navigationPath);
             }, 1500);
           }
         }, duration);
@@ -208,20 +296,15 @@ const Step4FinalizePlan: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen bg-[#F8F9F9]">
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar - Nutrition Plan Assistant */}
-        <div className="bg-[#F0F2F3] flex items-center justify-center px-6 py-2 border-b border-[#C1C9CB] sticky top-0 h-10">
-          <div className="flex items-center gap-2.5">
-            <MagicWandIcon className="text-[#657A7E]" />
-            <p className="text-sm font-semibold text-[#244348]">Nutrition Plan Assistant</p>
-          </div>
-        </div>
+    <WizardLayout currentStep="finalize-plan" completedSteps={completedSteps as any}>
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <WizardHeader />
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto flex justify-center">
-          <div className="w-full max-w-[678px] px-6 py-8 flex flex-col gap-6">
+          {/* Content Area */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="w-full max-w-[678px] mx-auto px-6 py-8 flex flex-col gap-6">
             {/* Header */}
             <div className="flex items-center gap-2.5">
               <h1 className="text-2xl font-bold text-[#01272E]">Customize nutrition plan</h1>
@@ -505,38 +588,38 @@ const Step4FinalizePlan: React.FC = () => {
               )}
             </div>
           </div>
-        </div>
+          </div>
 
-        {/* Bottom Navigation */}
-        <div className="bg-[#F8F9F9] border-t border-[#C1C9CB] px-6 py-4 flex items-center justify-between">
-          <button
-            onClick={handleCancel}
-            className="px-4 py-2.5 rounded hover:bg-[#DFE3E4] transition-colors"
-          >
-            <p className="text-sm font-semibold text-[#01272E]">Cancel</p>
-          </button>
-
-          <div className="flex items-center gap-2.5">
-            <IconButton
-              onClick={handlePrevious}
-              variant="secondary"
-              size="md"
-              tooltip="Previous step"
-              icon={<span className="material-icons text-2xl">keyboard_arrow_left</span>}
-            />
-
+          {/* Bottom Navigation */}
+          <div className="bg-[#F8F9F9] border-t border-[#C1C9CB] px-6 py-4 flex items-center justify-between">
             <button
-              onClick={handleFinalize}
-              className="bg-[#01272E] rounded h-10 flex items-center px-4 py-2.5 hover:bg-[#244348] transition-colors"
+              onClick={handleCancel}
+              className="px-4 py-2.5 rounded hover:bg-[#DFE3E4] transition-colors"
             >
-              <p className="text-sm font-semibold text-white">Create plan</p>
+              <p className="text-sm font-semibold text-[#01272E]">Cancel</p>
             </button>
+
+            <div className="flex items-center gap-2.5">
+              <IconButton
+                onClick={handlePrevious}
+                variant="secondary"
+                size="md"
+                tooltip="Previous step"
+                icon={<span className="material-icons text-2xl">keyboard_arrow_left</span>}
+              />
+
+              <button
+                onClick={handleFinalize}
+                className="bg-[#01272E] rounded h-10 flex items-center px-4 py-2.5 hover:bg-[#244348] transition-colors"
+              >
+                <p className="text-sm font-semibold text-white">Create plan</p>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Right Preview Panel */}
-      <div className="bg-[#1E8754] flex flex-col w-[520px] shrink-0 p-12 overflow-clip">
+        {/* Right Preview Panel */}
+        <div className="bg-[#1E8754] flex flex-col w-[520px] shrink-0 p-12 overflow-clip">
         <div className="flex-1 flex flex-col gap-4 overflow-clip px-0 py-6 rounded-lg">
           {/* Info Alert */}
           <InfoBanner message="Sample structure of your nutrition plan" />
@@ -690,7 +773,8 @@ const Step4FinalizePlan: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </WizardLayout>
   );
 };
 
