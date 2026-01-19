@@ -104,10 +104,11 @@ const MealPlanView: React.FC = () => {
           };
         } else {
           // Move: target slot is empty
-          updatedPlan.mealPlan.meals[sourceMealIndex] = {
-            ...sourceMeal,
-            recipeId: null
-          };
+          // Remove from source by filtering it out
+          updatedPlan.mealPlan.meals = updatedPlan.mealPlan.meals.filter(
+            (_, index) => index !== sourceMealIndex
+          );
+          // Add to target
           updatedPlan.mealPlan.meals.push({
             day,
             mealTime: mealTime as 'breakfast' | 'snack' | 'lunch' | 'dinner',
