@@ -33,11 +33,14 @@ export const DroppableSlot: React.FC<DroppableSlotProps> = ({
 
     try {
       const data = JSON.parse(e.dataTransfer.getData('application/json'));
+      console.log('DroppableSlot received data:', data);
       if (data.recipeId) {
         // Check if it's from the planner (has source location) or from the recipe list
         if (data.isFromPlanner && data.sourceDay !== undefined && data.sourceMealTime) {
+          console.log('Moving from planner:', data.sourceDay, data.sourceMealTime, 'to', day, mealTime);
           onDrop(day, mealTime, data.recipeId, data.sourceDay, data.sourceMealTime);
         } else {
+          console.log('Adding from recipe list to', day, mealTime);
           onDrop(day, mealTime, data.recipeId);
         }
       }

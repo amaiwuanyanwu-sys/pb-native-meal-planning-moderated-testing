@@ -69,6 +69,7 @@ const MealPlanView: React.FC = () => {
 
   // Handler for dropping a recipe into a meal slot
   const handleRecipeDrop = (day: number, mealTime: string, recipeId: number, sourceDay?: number, sourceMealTime?: string) => {
+    console.log('handleRecipeDrop called:', { day, mealTime, recipeId, sourceDay, sourceMealTime });
     if (!plan) return;
 
     const updatedPlan = { ...plan };
@@ -80,6 +81,7 @@ const MealPlanView: React.FC = () => {
 
     // If sourceDay and sourceMealTime are provided, this is a move/swap operation
     if (sourceDay !== undefined && sourceMealTime) {
+      console.log('Processing move/swap operation');
       // Find the source and target meals
       const sourceMealIndex = updatedPlan.mealPlan.meals.findIndex(
         m => m.day === sourceDay && m.mealTime === sourceMealTime
