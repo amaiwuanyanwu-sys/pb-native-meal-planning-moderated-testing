@@ -132,7 +132,7 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
                         title={recipe.title}
                         image={recipe.image}
                         time={recipe.time}
-                        ingredients={recipe.ingredients?.length || 0}
+                        ingredients={recipe.ingredients || 0}
                         onClick={() => setSelectedRecipeId(recipe.id)}
                         recipeId={recipe.id}
                         draggable={true}

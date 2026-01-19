@@ -13,6 +13,10 @@ interface MealPlannerRecipeCardProps {
   onMainClick?: () => void;
   onSideClick?: () => void;
   className?: string;
+  recipeId?: number;
+  day?: number;
+  mealTime?: string;
+  draggable?: boolean;
 }
 
 export const MealPlannerRecipeCard: React.FC<MealPlannerRecipeCardProps> = ({
@@ -26,15 +30,45 @@ export const MealPlannerRecipeCard: React.FC<MealPlannerRecipeCardProps> = ({
   sideIsLeftover = false,
   onMainClick,
   onSideClick,
-  className
+  className,
+  recipeId,
+  day,
+  mealTime,
+  draggable = false
 }) => {
+  const [isDragging, setIsDragging] = React.useState(false);
+
   // Show up to 2 images
   const displayImages = images.slice(0, 2);
 
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    if (draggable && recipeId && day !== undefined && mealTime) {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('application/json', JSON.stringify({
+        recipeId,
+        sourceDay: day,
+        sourceMealTime: mealTime,
+        title,
+        image: images[0],
+        isFromPlanner: true
+      }));
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
   return (
     <div
+      draggable={draggable}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       className={cn(
-        'bg-white flex flex-col gap-2 overflow-hidden p-2',
+        'bg-white flex flex-col gap-2 overflow-hidden p-2 transition-all',
+        draggable && 'cursor-move',
+        isDragging && 'opacity-50 scale-95',
         className
       )}
     >

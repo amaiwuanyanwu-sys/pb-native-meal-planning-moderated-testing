@@ -11,6 +11,7 @@ import { MealPlannerRecipeCard } from '@/components/meal-plan/MealPlannerRecipeC
 import { MealRowHeader } from '@/components/meal-plan/MealRowHeader';
 import { RecipeDetailsPopover } from '@/components/nutrition-plans/RecipeDetailsPopover';
 import { DroppableSlot } from '@/components/meal-plan/DroppableSlot';
+import { DroppableRecipeSlot } from '@/components/meal-plan/DroppableRecipeSlot';
 import { loadPlans, updatePlan } from '@/data/mockNutritionPlans';
 import type { NutritionPlan } from '@/data/mockNutritionPlans';
 import { mockUsers } from '@/data/mockUsers';
@@ -51,7 +52,7 @@ const MealPlanView: React.FC = () => {
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
 
   // Handler for dropping a recipe into a meal slot
-  const handleRecipeDrop = (day: number, mealTime: string, recipeId: number) => {
+  const handleRecipeDrop = (day: number, mealTime: string, recipeId: number, sourceDay?: number, sourceMealTime?: string) => {
     if (!plan) return;
 
     const updatedPlan = { ...plan };
@@ -61,24 +62,73 @@ const MealPlanView: React.FC = () => {
       updatedPlan.mealPlan.meals = [];
     }
 
-    // Check if meal already exists for this slot
-    const existingMealIndex = updatedPlan.mealPlan.meals.findIndex(
-      m => m.day === day && m.mealTime === mealTime
-    );
+    // If sourceDay and sourceMealTime are provided, this is a move/swap operation
+    if (sourceDay !== undefined && sourceMealTime) {
+      // Find the source and target meals
+      const sourceMealIndex = updatedPlan.mealPlan.meals.findIndex(
+        m => m.day === sourceDay && m.mealTime === sourceMealTime
+      );
+      const targetMealIndex = updatedPlan.mealPlan.meals.findIndex(
+        m => m.day === day && m.mealTime === mealTime
+      );
 
-    if (existingMealIndex >= 0) {
-      // Update existing meal
-      updatedPlan.mealPlan.meals[existingMealIndex] = {
-        ...updatedPlan.mealPlan.meals[existingMealIndex],
-        recipeId
-      };
+      if (sourceMealIndex >= 0) {
+        const sourceMeal = updatedPlan.mealPlan.meals[sourceMealIndex];
+
+        if (targetMealIndex >= 0) {
+          // Swap: both slots have recipes
+          const targetMeal = updatedPlan.mealPlan.meals[targetMealIndex];
+          updatedPlan.mealPlan.meals[sourceMealIndex] = {
+            ...sourceMeal,
+            recipeId: targetMeal.recipeId
+          };
+          updatedPlan.mealPlan.meals[targetMealIndex] = {
+            ...targetMeal,
+            recipeId: sourceMeal.recipeId
+          };
+        } else {
+          // Move: target slot is empty
+          updatedPlan.mealPlan.meals[sourceMealIndex] = {
+            ...sourceMeal,
+            recipeId: null
+          };
+          updatedPlan.mealPlan.meals.push({
+            day,
+            mealTime: mealTime as 'breakfast' | 'snack' | 'lunch' | 'dinner',
+            recipeId
+          });
+        }
+      }
     } else {
-      // Add new meal
-      updatedPlan.mealPlan.meals.push({
-        day,
-        mealTime: mealTime as 'breakfast' | 'snack' | 'lunch' | 'dinner',
-        recipeId
-      });
+      // This is adding a new recipe from the recipe list
+      const existingMealIndex = updatedPlan.mealPlan.meals.findIndex(
+        m => m.day === day && m.mealTime === mealTime
+      );
+
+      if (existingMealIndex >= 0) {
+        // Slot already has a recipe - add as side if there's no side yet
+        const existingMeal = updatedPlan.mealPlan.meals[existingMealIndex];
+        if (!existingMeal.sideRecipeId) {
+          // Add as side recipe
+          updatedPlan.mealPlan.meals[existingMealIndex] = {
+            ...existingMeal,
+            sideRecipeId: recipeId
+          };
+        } else {
+          // Already has a side, replace the main recipe
+          updatedPlan.mealPlan.meals[existingMealIndex] = {
+            ...existingMeal,
+            recipeId
+          };
+        }
+      } else {
+        // Add new meal
+        updatedPlan.mealPlan.meals.push({
+          day,
+          mealTime: mealTime as 'breakfast' | 'snack' | 'lunch' | 'dinner',
+          recipeId
+        });
+      }
     }
 
     // Update state
@@ -414,7 +464,12 @@ const MealPlanView: React.FC = () => {
               const sideRecipe = meal?.sideRecipeId ? getRecipe(meal.sideRecipeId) : null;
 
               return recipe ? (
-                <div key={`breakfast-${day}`} className="bg-white border-r border-[#DFE3E4] border-b border-[#DFE3E4]">
+                <DroppableRecipeSlot
+                  key={`breakfast-${day}`}
+                  day={day}
+                  mealTime="breakfast"
+                  onDrop={handleRecipeDrop}
+                >
                   <RecipeDetailsPopover
                     recipe={recipe}
                     open={selectedRecipeId === recipe.id}
@@ -430,10 +485,14 @@ const MealPlanView: React.FC = () => {
                         protein={recipe.nutrition?.protein}
                         onMainClick={() => setSelectedRecipeId(recipe.id)}
                         onSideClick={sideRecipe ? () => setSelectedRecipeId(sideRecipe.id) : undefined}
+                        recipeId={recipe.id}
+                        day={day}
+                        mealTime="breakfast"
+                        draggable={true}
                       />
                     </div>
                   </RecipeDetailsPopover>
-                </div>
+                </DroppableRecipeSlot>
               ) : (
                 <DroppableSlot
                   key={`breakfast-${day}`}
@@ -453,7 +512,12 @@ const MealPlanView: React.FC = () => {
               const sideRecipe = meal?.sideRecipeId ? getRecipe(meal.sideRecipeId) : null;
 
               return recipe ? (
-                <div key={`snack-${day}`} className="bg-white border-r border-[#DFE3E4] border-b border-[#DFE3E4]">
+                <DroppableRecipeSlot
+                  key={`snack-${day}`}
+                  day={day}
+                  mealTime="snack"
+                  onDrop={handleRecipeDrop}
+                >
                   <RecipeDetailsPopover
                     recipe={recipe}
                     open={selectedRecipeId === recipe.id}
@@ -469,10 +533,14 @@ const MealPlanView: React.FC = () => {
                         protein={recipe.nutrition?.protein}
                         onMainClick={() => setSelectedRecipeId(recipe.id)}
                         onSideClick={sideRecipe ? () => setSelectedRecipeId(sideRecipe.id) : undefined}
+                        recipeId={recipe.id}
+                        day={day}
+                        mealTime="snack"
+                        draggable={true}
                       />
                     </div>
                   </RecipeDetailsPopover>
-                </div>
+                </DroppableRecipeSlot>
               ) : (
                 <DroppableSlot
                   key={`snack-${day}`}
@@ -492,7 +560,12 @@ const MealPlanView: React.FC = () => {
               const sideRecipe = meal?.sideRecipeId ? getRecipe(meal.sideRecipeId) : null;
 
               return recipe ? (
-                <div key={`lunch-${day}`} className="bg-white border-r border-[#DFE3E4] border-b border-[#DFE3E4]">
+                <DroppableRecipeSlot
+                  key={`lunch-${day}`}
+                  day={day}
+                  mealTime="lunch"
+                  onDrop={handleRecipeDrop}
+                >
                   <RecipeDetailsPopover
                     recipe={recipe}
                     open={selectedRecipeId === recipe.id}
@@ -508,10 +581,14 @@ const MealPlanView: React.FC = () => {
                         protein={recipe.nutrition?.protein}
                         onMainClick={() => setSelectedRecipeId(recipe.id)}
                         onSideClick={sideRecipe ? () => setSelectedRecipeId(sideRecipe.id) : undefined}
+                        recipeId={recipe.id}
+                        day={day}
+                        mealTime="lunch"
+                        draggable={true}
                       />
                     </div>
                   </RecipeDetailsPopover>
-                </div>
+                </DroppableRecipeSlot>
               ) : (
                 <DroppableSlot
                   key={`lunch-${day}`}
@@ -531,7 +608,12 @@ const MealPlanView: React.FC = () => {
               const sideRecipe = meal?.sideRecipeId ? getRecipe(meal.sideRecipeId) : null;
 
               return recipe ? (
-                <div key={`dinner-${day}`} className="bg-white border-r border-[#DFE3E4] border-b border-[#DFE3E4]">
+                <DroppableRecipeSlot
+                  key={`dinner-${day}`}
+                  day={day}
+                  mealTime="dinner"
+                  onDrop={handleRecipeDrop}
+                >
                   <RecipeDetailsPopover
                     recipe={recipe}
                     open={selectedRecipeId === recipe.id}
@@ -547,10 +629,14 @@ const MealPlanView: React.FC = () => {
                         protein={recipe.nutrition?.protein}
                         onMainClick={() => setSelectedRecipeId(recipe.id)}
                         onSideClick={sideRecipe ? () => setSelectedRecipeId(sideRecipe.id) : undefined}
+                        recipeId={recipe.id}
+                        day={day}
+                        mealTime="dinner"
+                        draggable={true}
                       />
                     </div>
                   </RecipeDetailsPopover>
-                </div>
+                </DroppableRecipeSlot>
               ) : (
                 <DroppableSlot
                   key={`dinner-${day}`}
