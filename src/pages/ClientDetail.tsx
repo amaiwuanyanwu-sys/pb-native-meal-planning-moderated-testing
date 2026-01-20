@@ -12,6 +12,7 @@ import type { NutritionPlan } from '@/data/mockNutritionPlans';
 import { mockUsers } from '@/data/mockUsers';
 import { mockRecipes } from '@/data/mockRecipes';
 import { NutritionIcon } from '@/components/icons/NutritionIcon';
+import { getAssetUrl } from '@/utils/assetUrl';
 
 const browsableTemplates = [
   {
@@ -20,10 +21,10 @@ const browsableTemplates = [
     duration: '7 days',
     recipeCount: 22,
     imageUrls: [
-      '/assets/Recipe Images/coconut-turmeric-cauliflower-bowls.jpg',
-      '/assets/Recipe Images/sweet-dijon-garden-salad.jpg',
-      '/assets/Recipe Images/steamed-broccoli.jpg',
-      '/assets/Recipe Images/tart-cherry-limeade.jpg'
+      getAssetUrl('assets/Recipe Images/coconut-turmeric-cauliflower-bowls.jpg'),
+      getAssetUrl('assets/Recipe Images/sweet-dijon-garden-salad.jpg'),
+      getAssetUrl('assets/Recipe Images/steamed-broccoli.jpg'),
+      getAssetUrl('assets/Recipe Images/tart-cherry-limeade.jpg')
     ]
   },
   {
@@ -32,10 +33,10 @@ const browsableTemplates = [
     duration: '7 days',
     recipeCount: 22,
     imageUrls: [
-      '/assets/Recipe Images/mediterranean-roasted-tomato-chickpea-bowl.jpg',
-      '/assets/Recipe Images/lentil-feta-tabbouleh.jpg',
-      '/assets/Recipe Images/overnight-oats-with-berries-walnuts.jpg',
-      '/assets/Recipe Images/hummus-toast-with-avocado.jpg'
+      getAssetUrl('assets/Recipe Images/mediterranean-roasted-tomato-chickpea-bowl.jpg'),
+      getAssetUrl('assets/Recipe Images/lentil-feta-tabbouleh.jpg'),
+      getAssetUrl('assets/Recipe Images/overnight-oats-with-berries-walnuts.jpg'),
+      getAssetUrl('assets/Recipe Images/hummus-toast-with-avocado.jpg')
     ]
   },
   {
@@ -44,10 +45,10 @@ const browsableTemplates = [
     duration: '7 days',
     recipeCount: 22,
     imageUrls: [
-      '/assets/Recipe Images/grilled-bruschetta-chicken.jpg',
-      '/assets/Recipe Images/mediterranean-turkey-rice-bowl.jpg',
-      '/assets/Recipe Images/salmon-cucumber-bites.jpg',
-      '/assets/Recipe Images/greek-yogurt-almonds-cherries.jpg'
+      getAssetUrl('assets/Recipe Images/grilled-bruschetta-chicken.jpg'),
+      getAssetUrl('assets/Recipe Images/mediterranean-turkey-rice-bowl.jpg'),
+      getAssetUrl('assets/Recipe Images/salmon-cucumber-bites.jpg'),
+      getAssetUrl('assets/Recipe Images/greek-yogurt-almonds-cherries.jpg')
     ]
   }
 ];

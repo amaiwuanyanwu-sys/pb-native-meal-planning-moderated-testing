@@ -1,4 +1,5 @@
 import type { Recipe } from '@/components/nutrition-plans/RecipeDetailsPopover';
+import { getAssetUrl } from '@/utils/assetUrl';
 
 export const mockRecipes: Recipe[] = [
   {
@@ -6,7 +7,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Almond Butter Banana Sandwich',
     time: '5 mins',
     ingredients: 4,
-    image: '/assets/Recipe Images/almond-butter-banana-sandwich.jpg',
+    image: getAssetUrl('assets/Recipe Images/almond-butter-banana-sandwich.jpg'),
     tags: ['Vegetarian', 'Quick & easy'],
     ingredientsList: [
       { amount: '2 slices', name: 'Whole Grain Bread' },
@@ -36,7 +37,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Apple With Almond Butter',
     time: '3 mins',
     ingredients: 3,
-    image: '/assets/Recipe Images/apple-with-almond-butter.jpg',
+    image: getAssetUrl('assets/Recipe Images/apple-with-almond-butter.jpg'),
     tags: ['Vegan', 'Snack', 'Quick & easy'],
     ingredientsList: [
       { amount: '1', name: 'Apple (sliced)' },
@@ -64,7 +65,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Brown Rice',
     time: '45 mins',
     ingredients: 3,
-    image: '/assets/Recipe Images/brown-rice.jpg',
+    image: getAssetUrl('assets/Recipe Images/brown-rice.jpg'),
     tags: ['Vegan', 'Gluten-free', 'Side dish'],
     ingredientsList: [
       { amount: '1 cup', name: 'Brown Rice' },
@@ -94,7 +95,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Celery Hummus',
     time: '5 mins',
     ingredients: 3,
-    image: '/assets/Recipe Images/celery-hummus.jpg',
+    image: getAssetUrl('assets/Recipe Images/celery-hummus.jpg'),
     tags: ['Vegan', 'Low carb', 'Snack'],
     ingredientsList: [
       { amount: '4 stalks', name: 'Celery' },
@@ -123,7 +124,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Coconut Turmeric Cauliflower Bowls',
     time: '35 mins',
     ingredients: 12,
-    image: '/assets/Recipe Images/coconut-turmeric-cauliflower-bowls.jpg',
+    image: getAssetUrl('assets/Recipe Images/coconut-turmeric-cauliflower-bowls.jpg'),
     tags: ['Vegan', 'Anti-inflammatory', 'Bowl'],
     ingredientsList: [
       { amount: '1 head', name: 'Cauliflower (cut into florets)' },
@@ -163,7 +164,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Crackers Hummus',
     time: '5 mins',
     ingredients: 2,
-    image: '/assets/Recipe Images/crackers-hummus.jpg',
+    image: getAssetUrl('assets/Recipe Images/crackers-hummus.jpg'),
     tags: ['Vegan', 'Snack', 'Quick & easy'],
     ingredientsList: [
       { amount: '10', name: 'Whole Grain Crackers' },
@@ -189,7 +190,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Dark Chocolate Walnuts',
     time: '5 mins',
     ingredients: 2,
-    image: '/assets/Recipe Images/dark-chocolate-walnuts.jpg',
+    image: getAssetUrl('assets/Recipe Images/dark-chocolate-walnuts.jpg'),
     tags: ['Vegan', 'Snack', 'High antioxidant'],
     ingredientsList: [
       { amount: '1 oz', name: 'Dark Chocolate (70% cacao or higher)' },
@@ -216,7 +217,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Dates Apple',
     time: '3 mins',
     ingredients: 2,
-    image: '/assets/Recipe Images/dates-apple.jpg',
+    image: getAssetUrl('assets/Recipe Images/dates-apple.jpg'),
     tags: ['Vegan', 'Snack'],
     ingredientsList: [
       { amount: '3', name: 'Medjool Dates (pitted)' },
@@ -243,7 +244,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Garlic Oil Linguine',
     time: '20 mins',
     ingredients: 7,
-    image: '/assets/Recipe Images/garlic-oil-linguine.jpg',
+    image: getAssetUrl('assets/Recipe Images/garlic-oil-linguine.jpg'),
     tags: ['Vegetarian', 'Italian', 'Pasta'],
     ingredientsList: [
       { amount: '8 oz', name: 'Linguine' },
@@ -278,7 +279,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Greek Yogurt Almonds Cherries',
     time: '5 mins',
     ingredients: 4,
-    image: '/assets/Recipe Images/greek-yogurt-almonds-cherries.jpg',
+    image: getAssetUrl('assets/Recipe Images/greek-yogurt-almonds-cherries.jpg'),
     tags: ['Vegetarian', 'High protein', 'Breakfast'],
     ingredientsList: [
       { amount: '1 cup', name: 'Greek Yogurt (plain)' },
@@ -307,7 +308,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Grilled Bruschetta Chicken',
     time: '30 mins',
     ingredients: 10,
-    image: '/assets/Recipe Images/grilled-bruschetta-chicken.jpg',
+    image: getAssetUrl('assets/Recipe Images/grilled-bruschetta-chicken.jpg'),
     tags: ['High protein', 'Italian', 'Low carb'],
     ingredientsList: [
       { amount: '2', name: 'Chicken Breasts' },
@@ -345,7 +346,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Healthy Fish N Chips',
     time: '40 mins',
     ingredients: 10,
-    image: '/assets/Recipe Images/healthy-fish-n-chips.jpg',
+    image: getAssetUrl('assets/Recipe Images/healthy-fish-n-chips.jpg'),
     tags: ['Pescetarian', 'Baked', 'British'],
     ingredientsList: [
       { amount: '1 lb', name: 'Cod Fillets' },
@@ -384,7 +385,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Herby Grilled Chicken Drumsticks',
     time: '35 mins',
     ingredients: 8,
-    image: '/assets/Recipe Images/herby-grilled-chicken-drumsticks.jpg',
+    image: getAssetUrl('assets/Recipe Images/herby-grilled-chicken-drumsticks.jpg'),
     tags: ['High protein', 'Gluten-free', 'Grilled'],
     ingredientsList: [
       { amount: '6', name: 'Chicken Drumsticks' },
@@ -419,7 +420,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Hummus Toast With Avocado',
     time: '10 mins',
     ingredients: 6,
-    image: '/assets/Recipe Images/hummus-toast-with-avocado.jpg',
+    image: getAssetUrl('assets/Recipe Images/hummus-toast-with-avocado.jpg'),
     tags: ['Vegan', 'Quick & easy', 'Breakfast'],
     ingredientsList: [
       { amount: '2 slices', name: 'Whole Grain Bread' },
@@ -452,7 +453,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Kiwi Walnut Overnight Oats',
     time: '5 mins + overnight',
     ingredients: 7,
-    image: '/assets/Recipe Images/kiwi-walnut-overnight-oats.jpg',
+    image: getAssetUrl('assets/Recipe Images/kiwi-walnut-overnight-oats.jpg'),
     tags: ['Vegan', 'High fiber', 'Breakfast', 'Meal prep'],
     ingredientsList: [
       { amount: '1/2 cup', name: 'Rolled Oats' },
@@ -486,7 +487,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Lentil Feta Tabbouleh',
     time: '25 mins',
     ingredients: 11,
-    image: '/assets/Recipe Images/lentil-feta-tabbouleh.jpg',
+    image: getAssetUrl('assets/Recipe Images/lentil-feta-tabbouleh.jpg'),
     tags: ['Vegetarian', 'Mediterranean', 'High fiber'],
     ingredientsList: [
       { amount: '1 cup', name: 'Green Lentils (cooked)' },
@@ -525,7 +526,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Mediterranean Roasted Tomato Chickpea Bowl',
     time: '50 mins',
     ingredients: 10,
-    image: '/assets/Recipe Images/mediterranean-roasted-tomato-chickpea-bowl.jpg',
+    image: getAssetUrl('assets/Recipe Images/mediterranean-roasted-tomato-chickpea-bowl.jpg'),
     tags: ['Vegan', 'Low glycemic', 'Mediterranean', 'Bowl'],
     ingredientsList: [
       { amount: '1/2 Cup', name: 'Quinoa (dry, rinsed)' },
@@ -561,7 +562,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Mediterranean Turkey Rice Bowl',
     time: '30 mins',
     ingredients: 12,
-    image: '/assets/Recipe Images/mediterranean-turkey-rice-bowl.jpg',
+    image: getAssetUrl('assets/Recipe Images/mediterranean-turkey-rice-bowl.jpg'),
     tags: ['High protein', 'Mediterranean', 'Bowl'],
     ingredientsList: [
       { amount: '1 lb', name: 'Ground Turkey' },
@@ -601,7 +602,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Muesli With Yogurt Blueberries',
     time: '10 mins',
     ingredients: 6,
-    image: '/assets/Recipe Images/muesli-with-yogurt-blueberries.jpg',
+    image: getAssetUrl('assets/Recipe Images/muesli-with-yogurt-blueberries.jpg'),
     tags: ['Vegetarian', 'High fiber', 'Breakfast'],
     ingredientsList: [
       { amount: '1/2 cup', name: 'Muesli' },
@@ -633,7 +634,7 @@ export const mockRecipes: Recipe[] = [
     title: 'One Pan Chicken Chickpeas Broccoli',
     time: '40 mins',
     ingredients: 9,
-    image: '/assets/Recipe Images/one-pan-chicken-chickpeas-broccoli.jpg',
+    image: getAssetUrl('assets/Recipe Images/one-pan-chicken-chickpeas-broccoli.jpg'),
     tags: ['High protein', 'One-pan', 'Meal prep'],
     ingredientsList: [
       { amount: '4', name: 'Chicken Thighs (boneless, skinless)' },
@@ -671,7 +672,7 @@ export const mockRecipes: Recipe[] = [
     title: 'One Pan Chicken Curried Brown Rice',
     time: '45 mins',
     ingredients: 11,
-    image: '/assets/Recipe Images/one-pan-chicken-curried-brown-rice.jpg',
+    image: getAssetUrl('assets/Recipe Images/one-pan-chicken-curried-brown-rice.jpg'),
     tags: ['High protein', 'One-pan', 'Indian-inspired'],
     ingredientsList: [
       { amount: '1 lb', name: 'Chicken Breast (diced)' },
@@ -712,7 +713,7 @@ export const mockRecipes: Recipe[] = [
     title: 'One Pan Mediterranean Trout',
     time: '30 mins',
     ingredients: 10,
-    image: '/assets/Recipe Images/one-pan-mediterranean-trout.jpg',
+    image: getAssetUrl('assets/Recipe Images/one-pan-mediterranean-trout.jpg'),
     tags: ['Pescetarian', 'Mediterranean', 'One-pan', 'Omega-3'],
     ingredientsList: [
       { amount: '2', name: 'Trout Fillets' },
@@ -752,7 +753,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Overnight Bircher Muesli',
     time: '5 mins + overnight',
     ingredients: 8,
-    image: '/assets/Recipe Images/overnight-bircher-muesli.jpg',
+    image: getAssetUrl('assets/Recipe Images/overnight-bircher-muesli.jpg'),
     tags: ['Vegetarian', 'High fiber', 'Breakfast', 'Meal prep'],
     ingredientsList: [
       { amount: '1/2 cup', name: 'Rolled Oats' },
@@ -787,7 +788,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Overnight Oats With Berries Walnuts',
     time: '5 mins + overnight',
     ingredients: 7,
-    image: '/assets/Recipe Images/overnight-oats-with-berries-walnuts.jpg',
+    image: getAssetUrl('assets/Recipe Images/overnight-oats-with-berries-walnuts.jpg'),
     tags: ['Vegan', 'High fiber', 'Breakfast', 'Meal prep'],
     ingredientsList: [
       { amount: '1/2 cup', name: 'Rolled Oats' },
@@ -821,7 +822,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Pretzels Dates',
     time: '3 mins',
     ingredients: 2,
-    image: '/assets/Recipe Images/pretzels-dates.jpg',
+    image: getAssetUrl('assets/Recipe Images/pretzels-dates.jpg'),
     tags: ['Vegan', 'Snack', 'Quick & easy'],
     ingredientsList: [
       { amount: '1 oz', name: 'Mini Pretzels' },
@@ -848,7 +849,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Salmon Cucumber Bites',
     time: '5 mins',
     ingredients: 4,
-    image: '/assets/Recipe Images/salmon-cucumber-bites.jpg',
+    image: getAssetUrl('assets/Recipe Images/salmon-cucumber-bites.jpg'),
     tags: ['Pescetarian', 'Low carb', 'Appetizer'],
     ingredientsList: [
       { amount: '1', name: 'Cucumber (sliced)' },
@@ -878,7 +879,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Steamed Broccoli',
     time: '10 mins',
     ingredients: 3,
-    image: '/assets/Recipe Images/steamed-broccoli.jpg',
+    image: getAssetUrl('assets/Recipe Images/steamed-broccoli.jpg'),
     tags: ['Vegan', 'Gluten-free', 'Side dish'],
     ingredientsList: [
       { amount: '1 head', name: 'Broccoli (cut into florets)' },
@@ -908,7 +909,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Sweet Dijon Garden Salad',
     time: '15 mins',
     ingredients: 10,
-    image: '/assets/Recipe Images/sweet-dijon-garden-salad.jpg',
+    image: getAssetUrl('assets/Recipe Images/sweet-dijon-garden-salad.jpg'),
     tags: ['Vegan', 'Gluten-free', 'Salad'],
     ingredientsList: [
       { amount: '4 cups', name: 'Mixed Greens' },
@@ -945,7 +946,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Tart Cherry Limeade With Pretzels And Dates',
     time: '10 mins',
     ingredients: 6,
-    image: '/assets/Recipe Images/tart cherry limeade with pretzels and dates.jpg',
+    image: getAssetUrl('assets/Recipe Images/tart cherry limeade with pretzels and dates.jpg'),
     tags: ['Vegan', 'Beverage', 'Snack'],
     ingredientsList: [
       { amount: '1 cup', name: 'Tart Cherry Juice' },
@@ -977,7 +978,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Tart Cherry Limeade',
     time: '8 mins',
     ingredients: 4,
-    image: '/assets/Recipe Images/tart-cherry-limeade.jpg',
+    image: getAssetUrl('assets/Recipe Images/tart-cherry-limeade.jpg'),
     tags: ['Vegan', 'Beverage', 'Anti-inflammatory'],
     ingredientsList: [
       { amount: '1 cup', name: 'Tart Cherry Juice' },
@@ -1008,7 +1009,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Turkey Cheese Breakfast Plate',
     time: '10 mins',
     ingredients: 6,
-    image: '/assets/Recipe Images/turkey-cheese-breakfast-plate.jpg',
+    image: getAssetUrl('assets/Recipe Images/turkey-cheese-breakfast-plate.jpg'),
     tags: ['High protein', 'Low carb', 'Breakfast'],
     ingredientsList: [
       { amount: '4 oz', name: 'Sliced Turkey Breast' },
@@ -1040,7 +1041,7 @@ export const mockRecipes: Recipe[] = [
     title: 'Watermelon Feta Mini Skewers',
     time: '10 mins',
     ingredients: 5,
-    image: '/assets/Recipe Images/watermelon-feta-mini-skewers.jpg',
+    image: getAssetUrl('assets/Recipe Images/watermelon-feta-mini-skewers.jpg'),
     tags: ['Vegetarian', 'Appetizer'],
     ingredientsList: [
       { amount: '2 cups', name: 'Watermelon (cubed)' },
