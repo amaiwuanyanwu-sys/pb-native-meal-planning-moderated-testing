@@ -193,7 +193,7 @@ const Step2AllergensExclusions: React.FC = () => {
   };
 
   // Load completed steps from localStorage
-  const [completedSteps, setCompletedSteps] = useState<string[]>(() => {
+  const [completedSteps] = useState<string[]>(() => {
     const stored = localStorage.getItem('wizard_completedSteps');
     return stored ? JSON.parse(stored) : [];
   });

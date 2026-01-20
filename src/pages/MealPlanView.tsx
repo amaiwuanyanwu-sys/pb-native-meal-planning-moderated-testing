@@ -11,7 +11,6 @@ import { CellDetailView } from '@/components/meal-plan/CellDetailView';
 import { RecipeSelectionView } from '@/components/meal-plan/RecipeSelectionView';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
-import { SegmentedControl } from '@/components/ui/SegmentedControl';
 import { Avatar } from '@/components/ui/Avatar';
 import { DayHeader } from '@/components/meal-plan/DayHeader';
 import { MealPlannerRecipeCard } from '@/components/meal-plan/MealPlannerRecipeCard';
@@ -94,7 +93,6 @@ const MealPlanView: React.FC = () => {
 
   // Drag and drop state
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [overId, setOverId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -109,8 +107,8 @@ const MealPlanView: React.FC = () => {
   };
 
   // Handler for drag over
-  const handleDragOver = (event: DragOverEvent) => {
-    setOverId(event.over?.id as string | null);
+  const handleDragOver = (_event: DragOverEvent) => {
+    // Track over state if needed for visual feedback
   };
 
   // Handler for dropping a leftover into a meal slot
@@ -210,7 +208,6 @@ const MealPlanView: React.FC = () => {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
-    setOverId(null);
 
     // Block interactions during preview mode
     if (previewMeals) return;

@@ -53,7 +53,7 @@ const Step4FinalizePlan: React.FC = () => {
   const [additionalNotes, setAdditionalNotes] = useState('');
 
   // Load selected recipes from localStorage (from Step 4)
-  const [selectedRecipeIds, setSelectedRecipeIds] = useState<number[]>(() => {
+  const [selectedRecipeIds] = useState<number[]>(() => {
     const stored = localStorage.getItem('wizard_selectedRecipes');
     return stored ? JSON.parse(stored) : [];
   });

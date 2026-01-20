@@ -5,7 +5,6 @@ import { Chip } from '@/components/ui/Chip';
 import { WizardLayout } from '@/components/wizard/WizardLayout';
 import { WizardHeader } from '@/components/wizard/WizardHeader';
 import { clearWizardData } from '@/utils/wizardUtils';
-import { masterIngredients } from '@/data/masterIngredients';
 import { getIngredientTags, INGREDIENT_TAGS } from '@/data/ingredientTags';
 
 const foodPreferences = {
@@ -77,7 +76,7 @@ const Step1FoodPreferences: React.FC = () => {
   });
 
   // Load completed steps from localStorage
-  const [completedSteps, setCompletedSteps] = useState<string[]>(() => {
+  const [completedSteps] = useState<string[]>(() => {
     const stored = localStorage.getItem('wizard_completedSteps');
     return stored ? JSON.parse(stored) : [];
   });

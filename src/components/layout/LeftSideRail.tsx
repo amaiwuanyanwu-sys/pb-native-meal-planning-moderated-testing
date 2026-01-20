@@ -3,9 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import {
   MdOutlineRestaurant,
-  MdOutlineDescription,
-  MdOutlineMedication,
-  MdOutlineShoppingCart
+  MdOutlineDescription
 } from 'react-icons/md';
 import { LeftRailListItem } from '@/components/ui/LeftRailListItem';
 import { RailToggle } from '@/components/ui/RailToggle';

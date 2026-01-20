@@ -1,6 +1,5 @@
 import React from 'react';
 import { MagicWandIcon } from '@/components/icons/MagicWandIcon';
-import { Avatar } from '@/components/ui/Avatar';
 import { mockUsers } from '@/data/mockUsers';
 
 export const WizardHeader: React.FC = () => {

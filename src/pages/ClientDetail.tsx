@@ -171,10 +171,6 @@ const ClientDetail: React.FC = () => {
   const planTitle = 'Nutrition Plan';
   const isPrivate = true;
 
-  const handleBackToClients = () => {
-    navigate('/clients');
-  };
-
   return (
     <div className="flex h-screen bg-[#F8F9F9]">
       <Sidebar />

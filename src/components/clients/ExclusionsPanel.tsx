@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { masterIngredients, type Ingredient } from '@/data/masterIngredients';
-import { Tag } from '@/components/ui/Tag';
+import { masterIngredients } from '@/data/masterIngredients';
 
 interface ExclusionsPanelProps {
   excludedIngredients?: string[];

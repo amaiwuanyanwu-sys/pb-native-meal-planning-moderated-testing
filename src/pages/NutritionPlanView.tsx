@@ -96,10 +96,6 @@ const NutritionPlanView: React.FC = () => {
   // Load actual recipes from the plan's recipeIds
   const recipes = mockRecipes.filter(recipe => plan.recipeIds.includes(recipe.id));
 
-  // Get exclusions from the plan
-  const allergens = plan.exclusions.allergens;
-  const customExclusionDescription = plan.exclusions.customDescription;
-
   return (
     <div className="flex h-screen bg-[#F0F2F3]">
       {/* Sidebar */}

@@ -29,7 +29,6 @@ export const Select: React.FC<SelectProps> = ({
   onChange,
   required = false,
   helpText,
-  placeholder,
   icon,
   className,
 }) => {
