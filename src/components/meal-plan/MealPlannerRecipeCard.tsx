@@ -61,7 +61,6 @@ export const MealPlannerRecipeCard: React.FC<MealPlannerRecipeCardProps> = ({
   onMainSwap,
   onSideSwap,
   className,
-  recipeId,
   day,
   mealTime,
   draggable = false,

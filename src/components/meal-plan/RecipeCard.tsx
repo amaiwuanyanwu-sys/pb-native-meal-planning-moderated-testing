@@ -31,7 +31,6 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
   className,
   recipeId,
   draggable = false,
-  usageCount = 0,
   isLeftover = false,
   leftoverPortions = 0,
   actionButton

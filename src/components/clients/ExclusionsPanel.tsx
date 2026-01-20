@@ -3,13 +3,11 @@ import { masterIngredients, type Ingredient } from '@/data/masterIngredients';
 import { Tag } from '@/components/ui/Tag';
 
 interface ExclusionsPanelProps {
-  clientId: string;
   excludedIngredients?: string[];
   onExclusionsChange?: (exclusions: string[]) => void;
 }
 
 export const ExclusionsPanel: React.FC<ExclusionsPanelProps> = ({
-  clientId,
   excludedIngredients = [],
   onExclusionsChange
 }) => {

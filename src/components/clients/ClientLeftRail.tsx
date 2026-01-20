@@ -21,7 +21,6 @@ import {
 import { LeftRailListItem } from '@/components/ui/LeftRailListItem';
 import { RailToggle } from '@/components/ui/RailToggle';
 import { Tooltip } from '@/components/ui/Tooltip';
-import { Avatar } from '@/components/ui/Avatar';
 import { mockUsers } from '@/data/mockUsers';
 import { NutritionIcon } from '@/components/icons/NutritionIcon';
 

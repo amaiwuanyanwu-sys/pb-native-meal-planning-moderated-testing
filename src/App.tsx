@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import Home from './pages/Home'
 import Plans from './pages/Plans'
 import Planner from './pages/Planner'
 import NutritionPlans from './pages/NutritionPlans'

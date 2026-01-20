@@ -110,7 +110,7 @@ export const FiltersSideRail: React.FC<FiltersSideRailProps> = ({
 
           {/* Filters Content */}
           <div className="flex-1 overflow-y-auto">
-            {filters.map((filter, index) => (
+            {filters.map((filter) => (
               <div
                 key={filter.id}
                 className="border-b border-[#DFE3E4]"
