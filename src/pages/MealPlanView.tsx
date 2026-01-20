@@ -747,8 +747,8 @@ const MealPlanView: React.FC = () => {
       };
       setPlan(updatedPlan);
 
-      // If portion > 1, create or update leftover with (portion - 1) remaining portions
-      if (meal.recipeId && portion > 1) {
+      // Only create leftovers if both portion > 1 AND mainIsLeftover is true
+      if (meal.recipeId && portion > 1 && meal.mainIsLeftover) {
         const leftoverCount = portion - 1;
         const serving = meal.mainServing || 1;
         setLeftovers(prev => {
@@ -756,8 +756,8 @@ const MealPlanView: React.FC = () => {
           newLeftovers.set(meal.recipeId!, { portions: leftoverCount, serving });
           return newLeftovers;
         });
-      } else if (meal.recipeId && portion === 1) {
-        // If portion is set to 1, remove from leftovers
+      } else if (meal.recipeId) {
+        // Remove from leftovers if portion is 1 or leftover is not enabled
         setLeftovers(prev => {
           const newLeftovers = new Map(prev);
           newLeftovers.delete(meal.recipeId!);
@@ -793,8 +793,8 @@ const MealPlanView: React.FC = () => {
       };
       setPlan(updatedPlan);
 
-      // If portion > 1, create or update leftover with (portion - 1) remaining portions
-      if (meal.sideRecipeId && portion > 1) {
+      // Only create leftovers if both portion > 1 AND sideIsLeftover is true
+      if (meal.sideRecipeId && portion > 1 && meal.sideIsLeftover) {
         const leftoverCount = portion - 1;
         const serving = meal.sideServing || 1;
         setLeftovers(prev => {
@@ -802,8 +802,8 @@ const MealPlanView: React.FC = () => {
           newLeftovers.set(meal.sideRecipeId!, { portions: leftoverCount, serving });
           return newLeftovers;
         });
-      } else if (meal.sideRecipeId && portion === 1) {
-        // If portion is set to 1, remove from leftovers
+      } else if (meal.sideRecipeId) {
+        // Remove from leftovers if portion is 1 or leftover is not enabled
         setLeftovers(prev => {
           const newLeftovers = new Map(prev);
           newLeftovers.delete(meal.sideRecipeId!);

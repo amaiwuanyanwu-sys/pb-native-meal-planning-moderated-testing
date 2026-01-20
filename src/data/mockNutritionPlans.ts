@@ -248,26 +248,25 @@ function selectBestRecipe(
   let bestScore = -1;
 
   for (const recipe of sortedRecipes) {
-    // Try portions of 1 or 2 only (no fractional portions)
-    for (let portion = 1; portion <= 2; portion += 1) {
-      let score = scoreRecipeForGap(recipe, gap, portion);
+    // Always use portion of 1 (users can adjust manually if needed)
+    const portion = 1;
+    let score = scoreRecipeForGap(recipe, gap, portion);
 
-      // Bonus points for recipes that haven't been used yet this week
-      const usage = weeklyUsage?.get(recipe.id) || 0;
-      if (usage === 0) {
-        score += 10; // Bonus for variety
-      } else {
-        score -= usage * 2; // Penalty for overused recipes
-      }
+    // Bonus points for recipes that haven't been used yet this week
+    const usage = weeklyUsage?.get(recipe.id) || 0;
+    if (usage === 0) {
+      score += 10; // Bonus for variety
+    } else {
+      score -= usage * 2; // Penalty for overused recipes
+    }
 
-      if (score > bestScore) {
-        bestScore = score;
-        bestAssignment = {
-          recipeId: recipe.id,
-          portion,
-          nutrition: calculateMealNutrition(recipe, portion),
-        };
-      }
+    if (score > bestScore) {
+      bestScore = score;
+      bestAssignment = {
+        recipeId: recipe.id,
+        portion,
+        nutrition: calculateMealNutrition(recipe, portion),
+      };
     }
   }
 
