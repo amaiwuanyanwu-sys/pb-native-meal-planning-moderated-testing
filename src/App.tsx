@@ -14,7 +14,7 @@ import StepperDemo from './pages/StepperDemo'
 
 function App() {
   return (
-    <Router>
+    <Router basename="/pb-native-meal-planning-moderated-testing">
       <Routes>
         <Route path="/" element={<Navigate to="/nutrition" replace />} />
         <Route path="/nutrition" element={<NutritionPlans />} />
