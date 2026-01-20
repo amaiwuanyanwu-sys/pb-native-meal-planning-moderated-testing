@@ -28,10 +28,8 @@ export const SideNavItem: React.FC<SideNavItemProps> = ({
     className
   );
 
-  const content = (
-    <>
-      {/* Icon */}
-      {React.cloneElement(icon as React.ReactElement, {
+  const iconElement = React.isValidElement(icon)
+    ? React.cloneElement(icon as React.ReactElement<{ className?: string; size?: number }>, {
         className: cn(
           'transition-colors',
           isActive
@@ -39,7 +37,13 @@ export const SideNavItem: React.FC<SideNavItemProps> = ({
             : 'text-[#c1c9cb] group-hover:text-[#5fe089]'
         ),
         size: 20
-      })}
+      })
+    : icon;
+
+  const content = (
+    <>
+      {/* Icon */}
+      {iconElement}
 
       {/* Label */}
       <span
