@@ -460,14 +460,6 @@ const MealPlanView: React.FC = () => {
     fiber: plan?.mealPlan.nutritionTargets?.fiber || 30,
   };
 
-  // Determine plan title based on plan type
-  const planTitle = plan?.type === 'client'
-    ? (() => {
-        const user = mockUsers.find(u => u.id === plan.clientId);
-        return user ? `${user.name}'s Nutrition Plan` : 'Nutrition Plan';
-      })()
-    : (plan?.templateName || 'Nutrition Plan');
-
   // Recent items for the left sidebar - load from localStorage
   const recentItems = React.useMemo(() => {
     const plans = loadPlans();

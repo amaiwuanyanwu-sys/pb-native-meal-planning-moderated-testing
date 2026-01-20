@@ -20,19 +20,16 @@ export const SideNavItem: React.FC<SideNavItemProps> = ({
   className
 }) => {
   const isDisabled = path === '#';
-  const Component = isDisabled ? 'div' : Link;
-  const linkProps = isDisabled ? {} : { to: path };
 
-  return (
-    <Component
-      {...linkProps}
-      className={cn(
-        'relative flex flex-col items-center justify-center h-[42px] w-[72px] rounded gap-0 px-1 transition-colors group',
-        isActive ? 'bg-[#385459]' : !isDisabled && 'hover:bg-[#385459]/50',
-        isDisabled && 'cursor-default',
-        className
-      )}
-    >
+  const baseClassName = cn(
+    'relative flex flex-col items-center justify-center h-[42px] w-[72px] rounded gap-0 px-1 transition-colors group',
+    isActive ? 'bg-[#385459]' : !isDisabled && 'hover:bg-[#385459]/50',
+    isDisabled && 'cursor-default',
+    className
+  );
+
+  const content = (
+    <>
       {/* Icon */}
       {React.cloneElement(icon as React.ReactElement, {
         className: cn(
@@ -64,6 +61,16 @@ export const SideNavItem: React.FC<SideNavItemProps> = ({
           </span>
         </div>
       )}
-    </Component>
+    </>
+  );
+
+  if (isDisabled) {
+    return <div className={baseClassName}>{content}</div>;
+  }
+
+  return (
+    <Link to={path} className={baseClassName}>
+      {content}
+    </Link>
   );
 };
