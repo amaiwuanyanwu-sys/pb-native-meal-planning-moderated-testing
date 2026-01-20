@@ -20,10 +20,10 @@ const browsableTemplates = [
     duration: '7 days',
     recipeCount: 22,
     imageUrls: [
-      '/src/assets/Recipe Images/coconut-turmeric-cauliflower-bowls.jpg',
-      '/src/assets/Recipe Images/sweet-dijon-garden-salad.jpg',
-      '/src/assets/Recipe Images/steamed-broccoli.jpg',
-      '/src/assets/Recipe Images/tart-cherry-limeade.jpg'
+      '/assets/Recipe Images/coconut-turmeric-cauliflower-bowls.jpg',
+      '/assets/Recipe Images/sweet-dijon-garden-salad.jpg',
+      '/assets/Recipe Images/steamed-broccoli.jpg',
+      '/assets/Recipe Images/tart-cherry-limeade.jpg'
     ]
   },
   {
@@ -32,10 +32,10 @@ const browsableTemplates = [
     duration: '7 days',
     recipeCount: 22,
     imageUrls: [
-      '/src/assets/Recipe Images/mediterranean-roasted-tomato-chickpea-bowl.jpg',
-      '/src/assets/Recipe Images/lentil-feta-tabbouleh.jpg',
-      '/src/assets/Recipe Images/overnight-oats-with-berries-walnuts.jpg',
-      '/src/assets/Recipe Images/hummus-toast-with-avocado.jpg'
+      '/assets/Recipe Images/mediterranean-roasted-tomato-chickpea-bowl.jpg',
+      '/assets/Recipe Images/lentil-feta-tabbouleh.jpg',
+      '/assets/Recipe Images/overnight-oats-with-berries-walnuts.jpg',
+      '/assets/Recipe Images/hummus-toast-with-avocado.jpg'
     ]
   },
   {
@@ -44,10 +44,10 @@ const browsableTemplates = [
     duration: '7 days',
     recipeCount: 22,
     imageUrls: [
-      '/src/assets/Recipe Images/grilled-bruschetta-chicken.jpg',
-      '/src/assets/Recipe Images/mediterranean-turkey-rice-bowl.jpg',
-      '/src/assets/Recipe Images/salmon-cucumber-bites.jpg',
-      '/src/assets/Recipe Images/greek-yogurt-almonds-cherries.jpg'
+      '/assets/Recipe Images/grilled-bruschetta-chicken.jpg',
+      '/assets/Recipe Images/mediterranean-turkey-rice-bowl.jpg',
+      '/assets/Recipe Images/salmon-cucumber-bites.jpg',
+      '/assets/Recipe Images/greek-yogurt-almonds-cherries.jpg'
     ]
   }
 ];
