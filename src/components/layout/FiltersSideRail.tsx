@@ -19,6 +19,8 @@ interface FiltersSideRailProps {
   onToggleFilter: (filterId: string, option: string) => void;
   onToggleExpanded: (filterId: string) => void;
   onClearAll: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
   className?: string;
 }
 
@@ -27,12 +29,21 @@ export const FiltersSideRail: React.FC<FiltersSideRailProps> = ({
   onToggleFilter,
   onToggleExpanded,
   onClearAll,
+  isCollapsed: controlledIsCollapsed,
+  onToggleCollapse: controlledOnToggleCollapse,
   className
 }) => {
-  const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const [internalIsCollapsed, setInternalIsCollapsed] = React.useState(false);
+
+  // Use controlled state if provided, otherwise use internal state
+  const isCollapsed = controlledIsCollapsed !== undefined ? controlledIsCollapsed : internalIsCollapsed;
 
   const handleToggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
+    if (controlledOnToggleCollapse) {
+      controlledOnToggleCollapse();
+    } else {
+      setInternalIsCollapsed(!internalIsCollapsed);
+    }
   };
 
   const getTotalAppliedFilters = () => {

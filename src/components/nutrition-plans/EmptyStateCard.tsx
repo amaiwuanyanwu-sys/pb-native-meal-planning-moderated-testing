@@ -27,10 +27,18 @@ const features: Feature[] = [
   }
 ];
 
-export const EmptyStateCard: React.FC = () => {
+interface EmptyStateCardProps {
+  clientId?: string;
+}
+
+export const EmptyStateCard: React.FC<EmptyStateCardProps> = ({ clientId }) => {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
+    if (clientId) {
+      // Store clientId in localStorage for the wizard
+      localStorage.setItem('wizard_clientId', clientId);
+    }
     navigate('/wizard/step-1');
   };
 

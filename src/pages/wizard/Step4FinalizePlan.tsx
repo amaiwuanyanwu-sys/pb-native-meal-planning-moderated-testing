@@ -14,15 +14,21 @@ import { WizardLayout } from '@/components/wizard/WizardLayout';
 import { WizardHeader } from '@/components/wizard/WizardHeader';
 import { savePlan, generatePlanId, generateMealPlan } from '@/data/mockNutritionPlans';
 import type { NutritionPlan } from '@/data/mockNutritionPlans';
+import { clearWizardData } from '@/utils/wizardUtils';
 
 const Step4FinalizePlan: React.FC = () => {
   const navigate = useNavigate();
   const [isCreatingPlan, setIsCreatingPlan] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
-  const [activeTab, setActiveTab] = useState('client');
+
+  // Check if we're in client context
+  const wizardClientId = localStorage.getItem('wizard_clientId');
+  const isClientContext = !!wizardClientId;
+
+  const [activeTab, setActiveTab] = useState(isClientContext ? 'client' : 'client');
   const [mealPlanChoice, setMealPlanChoice] = useState<'no' | 'yes'>('no');
-  const [selectedUserId, setSelectedUserId] = useState('');
-  const [templateName, setTemplateName] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState(wizardClientId || '');
+  const [templateName, setTemplateName] = useState('Untitled template');
 
   // Load completed steps from localStorage
   const [completedSteps] = useState<string[]>(() => {
@@ -42,6 +48,9 @@ const Step4FinalizePlan: React.FC = () => {
 
   // What's most important state
   const [importance, setImportance] = useState<'grocery' | 'variety' | 'other'>('grocery');
+
+  // Additional notes state
+  const [additionalNotes, setAdditionalNotes] = useState('');
 
   // Load selected recipes from localStorage (from Step 4)
   const [selectedRecipeIds, setSelectedRecipeIds] = useState<number[]>(() => {
@@ -66,18 +75,14 @@ const Step4FinalizePlan: React.FC = () => {
   ];
 
   // Clear wizard data from localStorage
-  const clearWizardData = () => {
-    localStorage.removeItem('wizard_selectedRecipes');
-    localStorage.removeItem('wizard_foodPreferences');
-    localStorage.removeItem('wizard_allergens');
-    localStorage.removeItem('wizard_allergensDescription');
-    localStorage.removeItem('wizard_completedSteps');
-    localStorage.removeItem('wizard_step3_loaded');
-  };
-
   const handleCancel = () => {
+    const clientId = localStorage.getItem('wizard_clientId');
     clearWizardData();
-    navigate('/nutrition');
+    if (clientId) {
+      navigate(`/clients/${clientId}`);
+    } else {
+      navigate('/nutrition');
+    }
   };
 
   const handlePrevious = () => {
@@ -123,6 +128,7 @@ const Step4FinalizePlan: React.FC = () => {
         includesMealPlan: mealPlanChoice === 'yes',
         ...(mealPlanChoice === 'yes' ? {
           structure: mealPlanStructure,
+          numberOfDays: mealPlanStructure === 'structured' ? 5 : 1,
           nutritionTargets: {
             calories: parseInt(calories.replace(/,/g, '')) || 0,
             protein: parseInt(protein) || 0,
@@ -131,7 +137,13 @@ const Step4FinalizePlan: React.FC = () => {
             fiber: parseInt(fiber) || 0,
           },
           importance,
-          meals: generateMealPlan(recipeIds, mealPlanStructure),
+          meals: generateMealPlan(recipeIds, mealPlanStructure, {
+            calories: parseInt(calories.replace(/,/g, '')) || 0,
+            protein: parseInt(protein) || 0,
+            carbs: parseInt(carbs) || 0,
+            fat: parseInt(fat) || 0,
+            fiber: parseInt(fiber) || 0,
+          }),
         } : {}),
       },
     };
@@ -175,13 +187,19 @@ const Step4FinalizePlan: React.FC = () => {
             // All steps complete, navigate to the created plan view
             setTimeout(() => {
               const createdPlanInfo = localStorage.getItem('wizard_createdPlan');
+              const clientId = localStorage.getItem('wizard_clientId');
               let navigationPath = '/nutrition';
 
               if (createdPlanInfo) {
                 const planInfo = JSON.parse(createdPlanInfo);
 
-                // Navigate to the plan view page
-                navigationPath = `/nutrition/plans/${planInfo.id}`;
+                // If we're in client context, navigate to client detail
+                if (clientId) {
+                  navigationPath = `/clients/${clientId}`;
+                } else {
+                  // Otherwise navigate to the plan view page
+                  navigationPath = `/nutrition/plans/${planInfo.id}`;
+                }
 
                 localStorage.removeItem('wizard_createdPlan');
               }
@@ -310,15 +328,35 @@ const Step4FinalizePlan: React.FC = () => {
               <h1 className="text-2xl font-bold text-[#01272E]">Customize nutrition plan</h1>
             </div>
 
-            {/* Tabs */}
-            <div>
-              <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} variant="default" />
-            </div>
+            {/* Tabs - Only show when not in client context */}
+            {!isClientContext && (
+              <div>
+                <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} variant="default" />
+              </div>
+            )}
 
             {/* Content */}
             <div className="flex flex-col gap-4">
-              {/* Client Name Select (Client Plan tab) */}
-              {activeTab === 'client' && (
+              {/* Client Name - Read-only when in client context */}
+              {activeTab === 'client' && isClientContext && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-[#385459]">Client name</label>
+                  <div className="bg-[#F8F9F9] border border-[#DFE3E4] rounded h-10 px-3 flex items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="material-icons-outlined text-[#657A7E]" style={{ fontSize: '24px' }}>
+                        person
+                      </span>
+                      <p className="text-sm font-medium text-[#657A7E]">
+                        {mockUsers.find(u => u.id === wizardClientId)?.name || 'Unknown Client'}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs font-medium text-[#657A7E]">Saved to client's profile. We won't share it until you're ready.</p>
+                </div>
+              )}
+
+              {/* Client Name Select - Editable when not in client context */}
+              {activeTab === 'client' && !isClientContext && (
                 <Select
                   label="Client name"
                   value={selectedUserId}
@@ -327,7 +365,7 @@ const Step4FinalizePlan: React.FC = () => {
                   required
                   helpText="Saved to client's profile. We won't share it until you're ready."
                   icon={
-                    <span className="material-icons text-[#657A7E]" style={{ fontSize: '24px' }}>
+                    <span className="material-icons-outlined text-[#657A7E]" style={{ fontSize: '24px' }}>
                       person
                     </span>
                   }
@@ -340,7 +378,7 @@ const Step4FinalizePlan: React.FC = () => {
                   <div className="relative">
                     <div className="relative flex items-center">
                       {!templateName && (
-                        <span className="material-icons text-[#657A7E] absolute left-3 pointer-events-none z-10" style={{ fontSize: '24px' }}>
+                        <span className="material-icons-outlined text-[#657A7E] absolute left-3 pointer-events-none z-10" style={{ fontSize: '24px' }}>
                           dashboard
                         </span>
                       )}
@@ -348,6 +386,7 @@ const Step4FinalizePlan: React.FC = () => {
                         type="text"
                         value={templateName}
                         onChange={(e) => setTemplateName(e.target.value)}
+                        onFocus={(e) => e.target.select()}
                         className={`bg-white border border-[#C1C9CB] rounded h-10 w-full pr-3 text-sm font-medium text-[#244348] focus:outline-none focus:border-[#385459] peer ${
                           templateName ? 'pl-3' : 'pl-11'
                         }`}
@@ -367,6 +406,7 @@ const Step4FinalizePlan: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                  <p className="text-xs font-medium text-[#657A7E]">Saved to your templates. Keep it private or share with your team.</p>
                 </div>
               )}
 
@@ -407,7 +447,7 @@ const Step4FinalizePlan: React.FC = () => {
                           <div className="flex flex-col gap-1">
                             <p className="text-sm font-medium text-[#01272E]">Structured meal plan</p>
                             <p className="text-xs font-medium text-[#657A7E]">
-                              We'll create a 5 day plan with the recipe collection.
+                              We'll create a sample meal plan. You can adjust it later.
                             </p>
                           </div>
                         </div>
@@ -429,7 +469,7 @@ const Step4FinalizePlan: React.FC = () => {
                           <div className="flex flex-col gap-1">
                             <p className="text-sm font-medium text-[#01272E]">Simple meal plan</p>
                             <p className="text-xs font-medium text-[#657A7E]">
-                              We'll organize recipes in the collection into groups
+                              We'll create simple recipe groups without a set schedule.
                             </p>
                           </div>
                         </div>
@@ -535,7 +575,7 @@ const Step4FinalizePlan: React.FC = () => {
                       {/* Small grocery list */}
                       <button
                         onClick={() => setImportance('grocery')}
-                        className="flex items-center gap-3 px-4 py-3 border-b border-[#DFE3E4] hover:bg-[#F8F9F9] transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F9F9] transition-colors"
                       >
                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                           importance === 'grocery'
@@ -552,7 +592,7 @@ const Step4FinalizePlan: React.FC = () => {
                       {/* More recipe variety */}
                       <button
                         onClick={() => setImportance('variety')}
-                        className="flex items-center gap-3 px-4 py-3 border-b border-[#DFE3E4] hover:bg-[#F8F9F9] transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F9F9] transition-colors"
                       >
                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                           importance === 'variety'
@@ -566,7 +606,7 @@ const Step4FinalizePlan: React.FC = () => {
                         <p className="text-sm font-medium text-[#244348]">More recipe variety</p>
                       </button>
 
-                      {/* Something else */}
+                      {/* Other */}
                       <button
                         onClick={() => setImportance('other')}
                         className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F9F9] transition-colors"
@@ -580,10 +620,36 @@ const Step4FinalizePlan: React.FC = () => {
                             <div className="w-2.5 h-2.5 rounded-full bg-[#385459]" />
                           )}
                         </div>
-                        <p className="text-sm font-medium text-[#244348]">Something else...</p>
+                        <p className="text-sm font-medium text-[#244348]">Other</p>
                       </button>
                     </div>
                   </div>
+
+                  {/* Additional instructions textarea - shown when "Other" is selected */}
+                  {importance === 'other' && (
+                    <div className="flex flex-col gap-1 relative">
+                      <div className="relative">
+                        <textarea
+                          value={additionalNotes}
+                          onChange={(e) => setAdditionalNotes(e.target.value)}
+                          className="bg-white border border-[#C1C9CB] rounded min-h-[80px] w-full px-3 pt-3 pb-3 text-sm font-medium text-[#244348] focus:outline-none focus:border-[#385459] resize-none peer"
+                        />
+                        <div className={`absolute h-3 flex items-center transition-all pointer-events-none ${
+                          additionalNotes ? 'left-0 px-2 -top-2' : 'left-3 top-4'
+                        }`}>
+                          <div className={`h-3 flex items-center transition-all ${
+                            additionalNotes ? 'bg-white px-1' : 'bg-transparent'
+                          }`}>
+                            <p className={`font-medium leading-none transition-all px-1 ${
+                              additionalNotes ? 'text-xs text-[#385459]' : 'text-sm text-[#657A7E]'
+                            }`}>
+                              Additional instruction (optional)
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -626,40 +692,41 @@ const Step4FinalizePlan: React.FC = () => {
 
           {/* Recipe Book Widget */}
           <div className="bg-white border border-[#DFE3E4] rounded-lg flex flex-col overflow-hidden">
-            <div className="bg-[#F0F2F3] border-b border-[#DFE3E4] px-4 py-2 flex items-center">
+            <div className="bg-[#F0F2F3] px-4 py-2 flex items-center">
               <div className="flex gap-2 items-center">
                 <span className="material-icons-outlined text-[#657A7E]" style={{ fontSize: '24px' }}>
                   menu_book
                 </span>
-                <p className="text-sm font-semibold text-[#244348]">Recipe book</p>
+                <p className="text-sm font-semibold text-[#244348]">Recipe collection</p>
                 <div className="bg-[#DFE3E4] rounded-full px-2 py-0.5">
                   <p className="text-xs font-medium text-[#244348]">{selectedRecipes.length} {selectedRecipes.length === 1 ? 'recipe' : 'recipes'}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white flex gap-3 p-4 overflow-x-auto">
-              {selectedRecipes.slice(0, 7).map((recipe) => (
-                <div key={recipe.id} className="flex flex-col gap-1 items-center shrink-0 w-[100px]">
-                  <div className="border border-[#DFE3E4] rounded-xl h-[76px] w-full overflow-hidden">
-                    {recipe.image && (
-                      <img
-                        src={recipe.image}
-                        alt={recipe.title}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
+            {selectedRecipes.length > 0 ? (
+              <div className="bg-white flex gap-3 p-4 overflow-x-auto">
+                {selectedRecipes.slice(0, 7).map((recipe) => (
+                  <div key={recipe.id} className="flex flex-col gap-1 items-center shrink-0 w-[100px]">
+                    <div className="border border-[#DFE3E4] rounded-xl h-[76px] w-full overflow-hidden">
+                      {recipe.image && (
+                        <img
+                          src={recipe.image}
+                          alt={recipe.title}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <p className="text-xs font-semibold text-[#385459] line-clamp-2 text-center w-full">
+                      {recipe.title}
+                    </p>
                   </div>
-                  <p className="text-xs font-semibold text-[#385459] line-clamp-2 text-center w-full">
-                    {recipe.title}
-                  </p>
-                </div>
-              ))}
-              <div className="bg-[#F8F9F9] border border-[#DFE3E4] rounded-lg h-24 w-[140px] flex items-center justify-center p-3 shrink-0">
-                <p className="text-[10px] font-semibold text-[#244348] text-center leading-relaxed">
-                  You can add more recipes to your plan. We'll also give you suggestions.
-                </p>
+                ))}
               </div>
-            </div>
+            ) : (
+              <div className="flex items-start p-4">
+                <p className="text-sm font-medium text-[#657A7E]">No recipes selected</p>
+              </div>
+            )}
           </div>
 
           {/* Meal Plan Widget */}

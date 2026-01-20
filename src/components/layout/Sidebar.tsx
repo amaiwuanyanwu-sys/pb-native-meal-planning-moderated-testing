@@ -24,14 +24,14 @@ const NutritionIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 const navItems: NavItem[] = [
   { label: 'Home', path: '#' },
-  { label: 'Clients', path: '#' },
+  { label: 'Clients', path: '/clients' },
   { label: 'Practice', path: '#' },
   { label: 'Schedule', path: '#' }
 ];
 
 const bottomNavItems: NavItem[] = [
   { label: 'Messages', path: '#' },
-  { label: 'Nutrition', path: '#' },
+  { label: 'Nutrition', path: '/nutrition' },
   { label: 'More', path: '#' }
 ];
 
@@ -50,10 +50,11 @@ export const Sidebar: React.FC = () => {
 
   // Determine which items should be active based on the current route
   const isClientsActive = location.pathname.startsWith('/clients');
+  const isNutritionActive = location.pathname.startsWith('/nutrition') || location.pathname.startsWith('/wizard');
 
   const isActive = (label: string) => {
     if (label === 'Clients') return isClientsActive;
-    if (label === 'Nutrition') return true; // Always active for prototype
+    if (label === 'Nutrition') return isNutritionActive;
     return false;
   };
 

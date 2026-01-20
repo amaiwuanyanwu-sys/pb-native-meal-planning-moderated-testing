@@ -93,25 +93,25 @@ export const useWizardStepper = ({ currentStepId, completedSteps = [] }: UseWiza
       createStep(
         'food-preferences',
         'Food preferences',
-        'Dietary preferences & cooking effort',
+        '',
         <PreferencesIcon color={getIconColor('food-preferences')} />
       ),
       createStep(
         'allergens-exclusions',
-        'Allergens & Exclusions',
-        'Food allergies & dietary restrictions',
+        'Allergens & exclusions',
+        '',
         <span className="material-icons-outlined" style={{ fontSize: '20px', color: getIconColor('allergens-exclusions') }}>no_food</span>
       ),
       createStep(
         'choose-recipes',
         'Choose recipes',
-        'Select recipes for your plan',
+        '',
         <RecipesIcon color={getIconColor('choose-recipes')} />
       ),
       createStep(
         'finalize-plan',
-        'Finalize plan',
-        'Review and finalize your nutrition plan',
+        'Customize plan',
+        '',
         <span className="material-icons" style={{ fontSize: '20px', color: getIconColor('finalize-plan') }}>grid_on</span>
       )
     ];

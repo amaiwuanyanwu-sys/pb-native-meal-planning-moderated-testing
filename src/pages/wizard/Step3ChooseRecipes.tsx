@@ -10,6 +10,7 @@ import { RecipeCard } from '@/components/nutrition-plans/RecipeCard';
 import { mockRecipes } from '@/data/mockRecipes';
 import { FiltersSideRail } from '@/components/layout/FiltersSideRail';
 import type { FilterSection } from '@/components/layout/FiltersSideRail';
+import { clearWizardData } from '@/utils/wizardUtils';
 import { AnimatedFruits } from '@/components/ui/AnimatedFruits';
 import { Tabs } from '@/components/ui/Tabs';
 import { Tag } from '@/components/ui/Tag';
@@ -23,7 +24,7 @@ const Step3ChooseRecipes: React.FC = () => {
     const hasLoaded = localStorage.getItem('wizard_step3_loaded');
     return !hasLoaded;
   });
-  const [loadingMessage, setLoadingMessage] = useState('Analyzing your preferences...');
+  const [loadingMessage, setLoadingMessage] = useState('Analyzing preferences...');
   // Load selected recipes from localStorage or use default
   const [selectedRecipes, setSelectedRecipes] = useState<number[]>(() => {
     const stored = localStorage.getItem('wizard_selectedRecipes');
@@ -37,62 +38,77 @@ const Step3ChooseRecipes: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [openPopoverId, setOpenPopoverId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<'best-matches' | 'added'>('best-matches');
-  const [isFiltersSideRailOpen, setIsFiltersSideRailOpen] = useState(true);
+  const [isFiltersSideRailCollapsed, setIsFiltersSideRailCollapsed] = useState(true);
 
-  // Filter sidebar state
-  const [filters, setFilters] = useState<FilterSection[]>([
-    // {
-    //   id: 'dietary',
-    //   label: 'Dietary',
-    //   appliedCount: 0,
-    //   expanded: true,
-    //   options: ['anti-candida', 'auto-immune', 'elimination', 'vegetarian', 'vegan', 'ketogenic', 'low fodmap', 'mediterranean', 'paleo', 'pescetarian', 'pureed'],
-    //   selectedOptions: []
-    // },
-    {
-      id: 'mealTime',
-      label: 'Meal time',
-      appliedCount: 0,
-      expanded: true,
-      options: ['breakfast', 'lunch', 'dinner', 'snack', 'side', 'appetizer', 'dessert'],
-      selectedOptions: []
-    },
-    {
-      id: 'mealType',
-      label: 'Meal type',
-      appliedCount: 0,
-      expanded: true,
-      options: ['burger', 'cookie', 'dressing', 'drink', 'juice', 'meal prep', 'muffin', 'pancake', 'pasta', 'salad'],
-      selectedOptions: []
-    },
-    {
-      id: 'protein',
-      label: 'Protein',
-      appliedCount: 0,
-      expanded: true,
-      options: ['beef', 'chicken', 'meat', 'pork', 'seafood', 'eggs'],
-      selectedOptions: []
-    },
-    {
-      id: 'cultural',
-      label: 'Cultural',
-      appliedCount: 0,
-      expanded: false,
-      options: ['asian', 'italian', 'mexican', 'greek', 'indian', 'thai', 'french', 'spanish'],
-      selectedOptions: []
-    },
-    {
-      id: 'cookingAppliance',
-      label: 'Cooking appliance',
-      appliedCount: 0,
-      expanded: true,
-      options: ['air fryer', 'barbecue', 'one-pan', 'freezer', 'slow cooker', 'pressure cooker'],
-      selectedOptions: []
+  // Filter sidebar state - initialize with Step 1 cultural preferences
+  const [filters, setFilters] = useState<FilterSection[]>(() => {
+    // Load cultural preferences from Step 1
+    const foodPrefsStored = localStorage.getItem('wizard_foodPreferences');
+    let culturalPreSelected: string[] = [];
+
+    if (foodPrefsStored) {
+      try {
+        const foodPrefs = JSON.parse(foodPrefsStored);
+        if (foodPrefs.cultural) {
+          // Convert Step 1 cultural preferences to lowercase to match Step 3 filter options
+          culturalPreSelected = foodPrefs.cultural.map((c: string) => c.toLowerCase());
+        }
+      } catch {
+        // Ignore errors
+      }
     }
-  ]);
 
-  // Filter chips state (for top bar) - meal times only
-  const [selectedMealTimes, setSelectedMealTimes] = useState<string[]>([]);
+    return [
+      // {
+      //   id: 'dietary',
+      //   label: 'Dietary',
+      //   appliedCount: 0,
+      //   expanded: true,
+      //   options: ['anti-candida', 'auto-immune', 'elimination', 'vegetarian', 'vegan', 'ketogenic', 'low fodmap', 'mediterranean', 'paleo', 'pescetarian', 'pureed'],
+      //   selectedOptions: []
+      // },
+      {
+        id: 'mealTime',
+        label: 'Meal time',
+        appliedCount: 0,
+        expanded: true,
+        options: ['breakfast', 'lunch', 'dinner', 'snack', 'side', 'appetizer', 'dessert'],
+        selectedOptions: []
+      },
+      {
+        id: 'mealType',
+        label: 'Meal type',
+        appliedCount: 0,
+        expanded: true,
+        options: ['burger', 'cookie', 'dressing', 'drink', 'juice', 'meal prep', 'muffin', 'pancake', 'pasta', 'salad'],
+        selectedOptions: []
+      },
+      {
+        id: 'protein',
+        label: 'Protein',
+        appliedCount: 0,
+        expanded: true,
+        options: ['beef', 'chicken', 'meat', 'pork', 'seafood', 'eggs'],
+        selectedOptions: []
+      },
+      {
+        id: 'cultural',
+        label: 'Cultural',
+        appliedCount: culturalPreSelected.length,
+        expanded: culturalPreSelected.length > 0,
+        options: ['asian', 'italian', 'mexican', 'greek', 'indian', 'thai', 'french', 'spanish'],
+        selectedOptions: culturalPreSelected
+      },
+      {
+        id: 'cookingAppliance',
+        label: 'Cooking appliance',
+        appliedCount: 0,
+        expanded: true,
+        options: ['air fryer', 'barbecue', 'one-pan', 'freezer', 'slow cooker', 'pressure cooker'],
+        selectedOptions: []
+      }
+    ];
+  });
 
   // Simulate loading delay for mock data with progress messages
   useEffect(() => {
@@ -129,8 +145,16 @@ const Step3ChooseRecipes: React.FC = () => {
     localStorage.setItem('wizard_selectedRecipes', JSON.stringify(selectedRecipes));
   }, [selectedRecipes]);
 
-  // Meal time filter options (shown as chips)
-  const mealTimeOptions = ['Breakfast', 'Lunch', 'Dinner', 'Snacks', 'Dessert'];
+  // Meal time filter options (shown as chips) - synced with sidebar filter
+  const mealTimeOptions = [
+    { label: 'Breakfast', value: 'breakfast' },
+    { label: 'Lunch', value: 'lunch' },
+    { label: 'Dinner', value: 'dinner' },
+    { label: 'Snack', value: 'snack' },
+    { label: 'Side', value: 'side' },
+    { label: 'Appetizer', value: 'appetizer' },
+    { label: 'Dessert', value: 'dessert' }
+  ];
 
   const toggleRecipe = (recipeId: number) => {
     setSelectedRecipes(prev =>
@@ -140,12 +164,22 @@ const Step3ChooseRecipes: React.FC = () => {
     );
   };
 
-  const toggleMealTime = (mealTime: string) => {
-    setSelectedMealTimes(prev =>
-      prev.includes(mealTime)
-        ? prev.filter(m => m !== mealTime)
-        : [...prev, mealTime]
-    );
+  const toggleMealTime = (mealTimeValue: string) => {
+    // Update the mealTime filter in the filters sidebar
+    setFilters(prev => prev.map(filter => {
+      if (filter.id === 'mealTime') {
+        const isSelected = filter.selectedOptions.includes(mealTimeValue);
+        const newSelectedOptions = isSelected
+          ? filter.selectedOptions.filter(o => o !== mealTimeValue)
+          : [...filter.selectedOptions, mealTimeValue];
+        return {
+          ...filter,
+          selectedOptions: newSelectedOptions,
+          appliedCount: newSelectedOptions.length
+        };
+      }
+      return filter;
+    }));
   };
 
   const toggleFilterOption = (filterId: string, option: string) => {
@@ -180,6 +214,7 @@ const Step3ChooseRecipes: React.FC = () => {
   };
 
   const handleCancel = () => {
+    clearWizardData();
     navigate('/nutrition');
   };
 
@@ -213,7 +248,7 @@ const Step3ChooseRecipes: React.FC = () => {
             <div className="flex flex-col items-center gap-6 px-6 py-8">
               <AnimatedFruits className="w-32 h-36" />
               <div className="flex flex-col items-center gap-1">
-                <h1 className="text-2xl font-bold text-[#01272E]">Finding recipes for your plan</h1>
+                <h1 className="text-2xl font-bold text-[#01272E]">Finding recipes</h1>
                 <p className="text-base font-medium text-[#657A7E]">{loadingMessage}</p>
               </div>
             </div>
@@ -268,9 +303,9 @@ const Step3ChooseRecipes: React.FC = () => {
             <div className="w-full max-w-225 px-6 py-8 flex flex-col gap-6">
               {/* Header */}
               <div className="flex flex-col gap-1">
-                <h1 className="text-2xl font-bold text-[#01272E]">Build recipe collection</h1>
+                <h1 className="text-2xl font-bold text-[#01272E]">Add recipes to collection</h1>
                 <p className="text-base font-medium text-[#657A7E]">
-                  Pick at least 5 recipes to get started. We'll suggest similar ones to complete your plan.
+                  You can turn them into a plan in the next step or add more later.
                 </p>
               </div>
 
@@ -292,97 +327,144 @@ const Step3ChooseRecipes: React.FC = () => {
                 </div>
 
                 <Search
-                    placeholder="Search recipes"
-                    value={searchQuery}
-                    onChange={setSearchQuery}
-                  />
+                  placeholder="Search recipes"
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                />
               </div>
 
               {/* Filter Chips Row */}
               <div className="flex items-center gap-2">
                 {/* Meal Time Chips */}
-                {mealTimeOptions.map((mealTime) => (
-                  <Chip
-                    key={mealTime}
-                    label={mealTime}
-                    variant="no-icon"
-                    selected={selectedMealTimes.includes(mealTime)}
-                    onClick={() => toggleMealTime(mealTime)}
-                  />
-                ))}
+                {mealTimeOptions.map((mealTime) => {
+                  const mealTimeFilter = filters.find(f => f.id === 'mealTime');
+                  const isSelected = mealTimeFilter?.selectedOptions.includes(mealTime.value) || false;
+
+                  return (
+                    <Chip
+                      key={mealTime.value}
+                      label={mealTime.label}
+                      variant="no-icon"
+                      selected={isSelected}
+                      onClick={() => toggleMealTime(mealTime.value)}
+                    />
+                  );
+                })}
 
                 {/* More filters button */}
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsFiltersSideRailOpen(!isFiltersSideRailOpen)}
+                  onClick={() => setIsFiltersSideRailCollapsed(!isFiltersSideRailCollapsed)}
                   className="focus:ring-0 focus:ring-offset-0"
                 >
-                  {isFiltersSideRailOpen ? 'Hide filters' : 'More filters'}
+                  {isFiltersSideRailCollapsed ? 'All filters' : 'Hide filters'}
                 </Button>
               </div>
 
               {/* Recipe Grid */}
               <div className="flex flex-col gap-6 pb-16">
-                <div className="grid grid-cols-3 gap-4">
-                  {mockRecipes
-                    .filter(recipe => {
-                      // Filter by active tab
-                      if (activeTab === 'added') {
-                        return selectedRecipes.includes(recipe.id);
-                      }
+                {(() => {
+                  const filteredRecipes = mockRecipes.filter(recipe => {
+                    // Filter by active tab
+                    if (activeTab === 'added') {
+                      return selectedRecipes.includes(recipe.id);
+                    }
 
-                      // Apply meal time filters if any selected
-                      if (selectedMealTimes.length > 0) {
-                        const matchesMealTime = selectedMealTimes.some(mealTime =>
-                          recipe.tags?.some(tag => tag.toLowerCase().includes(mealTime.toLowerCase()))
-                        );
-                        if (!matchesMealTime) return false;
-                      }
+                    // Get selected meal time filters from sidebar
+                    const mealTimeFilter = filters.find(f => f.id === 'mealTime');
+                    const selectedMealTimes = mealTimeFilter?.selectedOptions || [];
 
-                      // Apply search query
-                      if (searchQuery) {
-                        const query = searchQuery.toLowerCase();
-                        return recipe.title.toLowerCase().includes(query);
-                      }
+                    // Apply meal time filters if any selected
+                    if (selectedMealTimes.length > 0) {
+                      const matchesMealTime = selectedMealTimes.some(mealTime =>
+                        recipe.tags?.some(tag => tag.toLowerCase().includes(mealTime.toLowerCase()))
+                      );
+                      if (!matchesMealTime) return false;
+                    }
 
-                      return true;
-                    })
-                    .map((recipe) => (
-                      <RecipeDetailsPopover
-                        key={recipe.id}
-                        recipe={recipe}
-                        open={openPopoverId === recipe.id}
-                        onOpenChange={(open) => setOpenPopoverId(open ? recipe.id : null)}
-                        onActionClick={(recipe) => toggleRecipe(recipe.id)}
-                        isActionActive={selectedRecipes.includes(recipe.id)}
-                      >
-                        <RecipeCard
-                          recipe={{
-                            ...recipe,
-                            calories: recipe.nutrition?.calories,
-                            tags: recipe.tags
-                          }}
-                          isSelected={selectedRecipes.includes(recipe.id)}
-                          onToggle={toggleRecipe}
-                          showCalories={false}
-                        />
-                      </RecipeDetailsPopover>
-                    ))}
-                </div>
+                    // Apply search query
+                    if (searchQuery) {
+                      const query = searchQuery.toLowerCase();
+                      return recipe.title.toLowerCase().includes(query);
+                    }
+
+                    return true;
+                  });
+
+                  if (filteredRecipes.length === 0) {
+                    // Empty state
+                    return (
+                      <div className="flex items-center justify-center py-16">
+                        <div className="bg-white border border-[#C1C9CB] rounded-lg flex flex-col gap-[18px] items-center p-8 max-w-md">
+                          <div className="flex flex-col gap-1 items-center text-center">
+                            <h3 className="text-base font-semibold text-[#244348] leading-[1.5]">
+                              {activeTab === 'added'
+                                ? 'Your recipe box is empty'
+                                : searchQuery
+                                  ? 'No recipes found'
+                                  : 'No recipes match your filters'}
+                            </h3>
+                            <p className="text-sm font-medium text-[#657A7E] leading-[1.4]">
+                              {activeTab === 'added'
+                                ? "Choose recipes from Browse and they'll appear here."
+                                : searchQuery
+                                  ? `No recipes match "${searchQuery}". Try different keywords or filters.`
+                                  : 'Try adjusting your filter selections to see more recipes.'}
+                            </p>
+                          </div>
+                          {activeTab === 'added' && (
+                            <button
+                              onClick={() => setActiveTab('best-matches')}
+                              className="bg-white border border-[#96A5A8] rounded h-10 px-4 py-2.5 flex items-center justify-center hover:bg-[#F0F2F3] transition-colors"
+                            >
+                              <span className="text-sm font-semibold text-[#385459] leading-[1.4]">
+                                Browse recipes
+                              </span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="grid grid-cols-3 gap-4">
+                      {filteredRecipes.map((recipe) => (
+                        <RecipeDetailsPopover
+                          key={recipe.id}
+                          recipe={recipe}
+                          open={openPopoverId === recipe.id}
+                          onOpenChange={(open) => setOpenPopoverId(open ? recipe.id : null)}
+                        >
+                          <RecipeCard
+                            recipe={{
+                              ...recipe,
+                              calories: recipe.nutrition?.calories,
+                              tags: recipe.tags
+                            }}
+                            isSelected={selectedRecipes.includes(recipe.id)}
+                            onToggle={toggleRecipe}
+                            showCalories={false}
+                          />
+                        </RecipeDetailsPopover>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
 
           {/* Filters Sidebar */}
-          {isFiltersSideRailOpen && (
-            <FiltersSideRail
-              filters={filters}
-              onToggleFilter={toggleFilterOption}
-              onToggleExpanded={toggleFilterExpanded}
-              onClearAll={clearAllFilters}
-            />
-          )}
+          <FiltersSideRail
+            filters={filters}
+            onToggleFilter={toggleFilterOption}
+            onToggleExpanded={toggleFilterExpanded}
+            onClearAll={clearAllFilters}
+            isCollapsed={isFiltersSideRailCollapsed}
+            onToggleCollapse={() => setIsFiltersSideRailCollapsed(!isFiltersSideRailCollapsed)}
+          />
         </div>
 
         {/* Bottom Navigation */}
@@ -412,7 +494,7 @@ const Step3ChooseRecipes: React.FC = () => {
               className="bg-[#01272E] rounded h-10 flex items-center gap-1 px-2 pr-4 py-2.5 hover:bg-[#244348] transition-colors"
             >
               <span className="material-icons text-2xl text-white">keyboard_arrow_right</span>
-              <p className="text-sm font-semibold text-white">Next: Finalize plan</p>
+              <p className="text-sm font-semibold text-white">Next: Customize plan</p>
             </button>
           </div>
         </div>

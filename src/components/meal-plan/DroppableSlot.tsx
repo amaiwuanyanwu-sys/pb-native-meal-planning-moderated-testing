@@ -1,74 +1,50 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useDroppable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 
 interface DroppableSlotProps {
   day: number;
   mealTime: 'breakfast' | 'snack' | 'lunch' | 'dinner';
-  onDrop: (day: number, mealTime: string, recipeId: number, sourceDay?: number, sourceMealTime?: string) => void;
   className?: string;
+  onClick?: () => void;
+  isSelected?: boolean;
 }
 
 export const DroppableSlot: React.FC<DroppableSlotProps> = ({
   day,
   mealTime,
-  onDrop,
-  className
+  className,
+  onClick,
+  isSelected = false
 }) => {
-  const [isDragOver, setIsDragOver] = useState(false);
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragOver(false);
-
-    try {
-      const data = JSON.parse(e.dataTransfer.getData('application/json'));
-      console.log('DroppableSlot received data:', data);
-      if (data.recipeId) {
-        // Check if it's from the planner (has source location) or from the recipe list
-        if (data.isFromPlanner && data.sourceDay !== undefined && data.sourceMealTime) {
-          console.log('Moving from planner:', data.sourceDay, data.sourceMealTime, 'to', day, mealTime);
-          onDrop(day, mealTime, data.recipeId, data.sourceDay, data.sourceMealTime);
-        } else {
-          console.log('Adding from recipe list to', day, mealTime);
-          onDrop(day, mealTime, data.recipeId);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to parse drop data:', error);
-    }
-  };
+  const dropId = `planner-${day}-${mealTime}`;
+  const { setNodeRef, isOver } = useDroppable({
+    id: dropId,
+  });
 
   return (
     <div
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
+      ref={setNodeRef}
+      onClick={onClick}
       className={cn(
-        'bg-[#F0F2F3] border-r border-[#DFE3E4] border-b border-[#DFE3E4] p-3 flex flex-col gap-1 items-center justify-center transition-colors',
-        isDragOver && 'bg-[#E6F7FF] border-[#34B9E0] border-2',
+        'bg-[#F0F2F3] hover:bg-[#F2F8FB] border-r border-[#DFE3E4] border-b border-[#DFE3E4] p-2 flex flex-col gap-1 items-center justify-center transition-colors relative cursor-pointer h-full min-h-30',
+        isOver && 'bg-[#F2F8FB]',
+        isSelected && 'border-2 border-dashed border-[#007CB2]',
         className
       )}
     >
-      {isDragOver ? (
+      {isOver ? (
         <>
-          <span className="material-icons text-xl text-[#34B9E0]">add_circle</span>
-          <p className="text-xs font-medium text-[#34B9E0] leading-[1.5]">Drop here</p>
+          {/* Main recipe drop zone indicator - full width */}
+          <div className="absolute inset-0 border-2 border-dashed border-[#007CB2] bg-[#F2F8FB] bg-opacity-50 flex flex-col items-center justify-center gap-1 pointer-events-none">
+            <span className="material-icons text-xl text-[#007CB2]">add_circle</span>
+            <p className="text-xs font-medium text-[#007CB2] leading-normal">Main</p>
+          </div>
         </>
       ) : (
         <>
           <span className="material-icons text-xl text-[#96A5A8]">add</span>
-          <p className="text-xs font-medium text-[#96A5A8] leading-[1.5]">Add</p>
+          <p className="text-xs font-medium text-[#96A5A8] leading-normal">Add</p>
         </>
       )}
     </div>

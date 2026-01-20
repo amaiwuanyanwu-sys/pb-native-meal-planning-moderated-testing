@@ -5,29 +5,52 @@ interface SearchDropdownProps {
   placeholder?: string;
   options: string[];
   selectedOptions: string[];
-  suggestedOptions?: string[]; // Options to show as suggestions initially
+  groups?: string[]; // Food groups/tags to show in separate section
   onOptionToggle: (option: string) => void;
   variant?: 'default' | 'stretch';
+  chipVariant?: 'default' | 'exclusion'; // Variant for chip icons
   className?: string;
+  getGroupsForIngredients?: (ingredients: string[]) => string[]; // Function to get groups that match ingredients
+  isIngredientInSelectedGroup?: (ingredient: string) => boolean; // Function to check if ingredient belongs to a selected group
 }
 
 export const SearchDropdown: React.FC<SearchDropdownProps> = ({
   placeholder = 'Search',
   options,
   selectedOptions,
-  suggestedOptions = [],
+  groups = [],
   onOptionToggle,
   variant = 'default',
-  className = ''
+  chipVariant = 'default',
+  className = '',
+  getGroupsForIngredients,
+  isIngredientInSelectedGroup
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Filter options based on search query
-  const filteredOptions = options.filter(option =>
-    option.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter options based on search query and limit to 15 results
+  const filteredOptions = options
+    .filter(option =>
+      option.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .slice(0, 15);
+
+  // Filter groups based on:
+  // 1. Group name matches the search query, OR
+  // 2. At least one filtered ingredient belongs to that group
+  const filteredGroups = groups.filter(group => {
+    // Check if group name matches search query
+    const groupNameMatches = group.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Check if any filtered ingredient belongs to this group
+    const hasMatchingIngredients = getGroupsForIngredients
+      ? getGroupsForIngredients(filteredOptions).includes(group)
+      : false;
+
+    return groupNameMatches || hasMatchingIngredients;
+  });
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -59,7 +82,7 @@ export const SearchDropdown: React.FC<SearchDropdownProps> = ({
     >
       {/* Search Input - Always visible */}
       <div
-        className={`flex items-center gap-2 h-10 px-3 py-2 border border-[#96A5A8] rounded bg-white cursor-text ${
+        className={`flex items-center gap-2 h-10 px-3 py-2 border border-[#96A5A8] rounded bg-white cursor-text focus-within:border-[#007CB2] focus-within:border-2 ${
           variant === 'stretch' ? 'w-full' : 'w-[294px]'
         }`}
         onClick={handleSearchClick}
@@ -75,79 +98,79 @@ export const SearchDropdown: React.FC<SearchDropdownProps> = ({
         />
       </div>
 
-      {/* Chips below search - Always visible when collapsed */}
-      {!isExpanded && (
-        <div className="mt-3 flex flex-wrap gap-3">
-          {/* Show all suggested chips in original order, with selected state */}
-          {suggestedOptions.map((option) => {
-            const isSelected = selectedOptions.includes(option);
-            return (
-              <Chip
-                key={option}
-                label={option}
-                selected={isSelected}
-                onClick={() => onOptionToggle(option)}
-              />
-            );
-          })}
-        </div>
-      )}
-
-      {/* Dropdown - Appears when expanded */}
-      {isExpanded && (
+      {/* Dropdown - Appears when expanded and user has typed something */}
+      {isExpanded && searchQuery && (
         <div
           className={`absolute top-full left-0 mt-2 bg-white border border-[#DFE3E4] rounded shadow-lg z-50 ${
             variant === 'stretch' ? 'w-full' : 'w-[294px]'
           }`}
         >
           <div className="p-3 flex flex-col gap-3 max-h-[320px] overflow-y-auto">
-            {/* Selected chips at top of dropdown */}
-            {selectedOptions.length > 0 && (
+            {/* Groups Section */}
+            {filteredGroups.length > 0 && (
               <>
-                <div className="flex flex-wrap gap-2">
-                  {selectedOptions.map((option) => (
-                    <Chip
-                      key={option}
-                      label={option}
-                      selected={true}
-                      variant="removable"
-                      size="sm"
-                      onClick={() => onOptionToggle(option)}
-                    />
-                  ))}
+                <div>
+                  <p className="text-xs font-semibold text-[#657A7E] uppercase tracking-wide mb-2 px-2">
+                    Groups
+                  </p>
+                  <div className="flex flex-wrap gap-2 px-2">
+                    {filteredGroups.map((group) => {
+                      const isSelected = selectedOptions.includes(group);
+                      return (
+                        <Chip
+                          key={group}
+                          label={group}
+                          variant={chipVariant}
+                          selected={isSelected}
+                          onClick={(e) => {
+                            e?.stopPropagation();
+                            onOptionToggle(group);
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="h-px bg-[#DFE3E4]" />
               </>
             )}
 
-            {/* Full searchable list with checkboxes */}
+            {/* Ingredients Section */}
             {filteredOptions.length > 0 ? (
-              <div className="flex flex-col gap-1">
-                {filteredOptions.map((option) => {
-                  const isSelected = selectedOptions.includes(option);
-                  // Don't show already selected items again in the list
-                  if (isSelected) return null;
+              <div>
+                <p className="text-xs font-semibold text-[#657A7E] uppercase tracking-wide mb-2 px-2">
+                  Ingredients
+                </p>
+                <div className="flex flex-col gap-1">
+                  {filteredOptions.map((option) => {
+                    // Check if ingredient is directly selected OR belongs to a selected group
+                    const isDirectlySelected = selectedOptions.includes(option);
+                    const isInSelectedGroup = isIngredientInSelectedGroup ? isIngredientInSelectedGroup(option) : false;
+                    const isSelected = isDirectlySelected || isInSelectedGroup;
 
-                  return (
-                    <label
-                      key={option}
-                      className="flex items-center gap-3 px-2 py-2 rounded hover:bg-[#F0F2F3] cursor-pointer transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={false}
-                        onChange={() => onOptionToggle(option)}
-                        className="w-4 h-4 rounded border-[#96A5A8] text-[#01272E] focus:ring-2 focus:ring-[#01272E] cursor-pointer"
-                      />
-                      <span className="text-sm font-medium text-[#01272E]">{option}</span>
-                    </label>
-                  );
-                })}
+                    return (
+                      <label
+                        key={option}
+                        className="flex items-center gap-3 px-2 py-2 rounded hover:bg-[#F0F2F3] cursor-pointer transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => onOptionToggle(option)}
+                          className="w-4 h-4 rounded border-[#96A5A8] text-[#01272E] focus:ring-2 focus:ring-[#01272E] cursor-pointer"
+                        />
+                        <span className="text-sm font-medium text-[#01272E]">{option}</span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
             ) : (
-              <p className="text-sm text-[#657A7E] text-center py-2">
-                {searchQuery ? 'No results found' : 'Start typing to search'}
-              </p>
+              filteredGroups.length === 0 && (
+                <p className="text-sm text-[#657A7E] text-center py-2">
+                  {searchQuery ? 'No results found' : 'Start typing to search'}
+                </p>
+              )
             )}
           </div>
         </div>

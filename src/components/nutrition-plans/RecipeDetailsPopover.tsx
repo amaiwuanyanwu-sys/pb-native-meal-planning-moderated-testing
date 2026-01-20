@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  PopoverAnchor,
 } from '@/components/ui/popover';
 import { IngredientIcon } from '@/components/icons/IngredientIcon';
 import { Tag } from '@/components/ui/Tag';
@@ -93,38 +94,21 @@ interface RecipeDetailsPopoverProps {
   actionLabel?: string;
   isActionActive?: boolean;
   children?: React.ReactNode;
+  anchorElement?: HTMLElement | null;
 }
 
-const AccordionSection: React.FC<{
-  id: string;
+const Section: React.FC<{
   title: string;
   children: React.ReactNode;
-  isExpanded: boolean;
-  onToggle: () => void;
-}> = ({ title, children, isExpanded, onToggle }) => {
+}> = ({ title, children }) => {
   return (
     <div className="flex flex-col">
-      <button
-        onClick={onToggle}
-        className="bg-white flex h-10 items-center justify-between pl-4 pr-0 py-0 w-full hover:bg-[#F8F9F9] transition-colors"
-      >
+      <div className="bg-white flex h-10 items-center pl-4 pr-4 py-0 w-full">
         <span className="text-sm font-semibold text-[#385459]">
           {title}
         </span>
-        <div className="flex items-center justify-end">
-          <div className="flex items-center justify-center p-2 rounded w-10">
-            <span
-              className={cn(
-                "material-icons-outlined text-2xl text-[#657A7E] transition-transform",
-                isExpanded ? "" : "rotate-180"
-              )}
-            >
-              keyboard_arrow_up
-            </span>
-          </div>
-        </div>
-      </button>
-      {isExpanded && children}
+      </div>
+      {children}
     </div>
   );
 };
@@ -137,26 +121,18 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
   actionLabel = 'Add',
   isActionActive = false,
   children,
+  anchorElement,
 }) => {
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['ingredients']));
-
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(sectionId)) {
-        newSet.delete(sectionId);
-      } else {
-        newSet.add(sectionId);
-      }
-      return newSet;
-    });
-  };
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>
-        {children}
-      </PopoverTrigger>
+      {children ? (
+        <PopoverTrigger asChild>
+          {children}
+        </PopoverTrigger>
+      ) : anchorElement ? (
+        <PopoverAnchor virtualRef={{ current: anchorElement }} />
+      ) : null}
       <PopoverContent
         className="w-[380px] p-0 overflow-y-auto max-h-[90vh] overscroll-contain"
         side="right"
@@ -238,16 +214,11 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
             )}
           </div>
 
-          {/* Accordion Sections */}
+          {/* Sections */}
           <div className="flex flex-col gap-1">
             {/* Ingredients Section */}
             {recipe.ingredientsList && recipe.ingredientsList.length > 0 && (
-              <AccordionSection
-                id="ingredients"
-                title="Ingredients"
-                isExpanded={expandedSections.has('ingredients')}
-                onToggle={() => toggleSection('ingredients')}
-              >
+              <Section title="Ingredients">
                 <div className="flex flex-col gap-1 px-1 py-2 pb-3">
                   {recipe.ingredientsList.map((ingredient, index) => (
                     <div
@@ -263,17 +234,12 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
                     </div>
                   ))}
                 </div>
-              </AccordionSection>
+              </Section>
             )}
 
             {/* Nutrition Section */}
             {recipe.nutrition && (
-              <AccordionSection
-                id="nutrition"
-                title="Nutrition"
-                isExpanded={expandedSections.has('nutrition')}
-                onToggle={() => toggleSection('nutrition')}
-              >
+              <Section title="Nutrition">
                 <div className="flex flex-col">
                   <div className="flex items-center justify-between px-4 py-0">
                     <span className="text-xs font-semibold text-[#657A7E]">
@@ -333,17 +299,12 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
                     })}
                   </div>
                 </div>
-              </AccordionSection>
+              </Section>
             )}
 
             {/* Directions Section */}
             {recipe.directions && recipe.directions.length > 0 && (
-              <AccordionSection
-                id="directions"
-                title="Directions"
-                isExpanded={expandedSections.has('directions')}
-                onToggle={() => toggleSection('directions')}
-              >
+              <Section title="Directions">
                 <div className="bg-white flex flex-col gap-3 px-3 pr-4 pt-2 pb-0 text-sm font-medium text-[#244348]">
                   {recipe.directions.map((direction, index) => (
                     <div key={index} className="flex flex-col w-full">
@@ -355,7 +316,7 @@ export const RecipeDetailsPopover: React.FC<RecipeDetailsPopoverProps> = ({
                     </div>
                   ))}
                 </div>
-              </AccordionSection>
+              </Section>
             )}
           </div>
 

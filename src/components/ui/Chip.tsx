@@ -4,9 +4,9 @@ import { cn } from '@/lib/utils';
 interface ChipProps {
   label: string;
   selected?: boolean;
-  variant?: 'default' | 'removable' | 'no-icon' | 'dropdown'; // 'no-icon' has no icons, 'dropdown' shows chevron on right
+  variant?: 'default' | 'removable' | 'no-icon' | 'dropdown' | 'exclusion' | 'exclusion-removable'; // 'no-icon' has no icons, 'dropdown' shows chevron on right, 'exclusion' shows block icon, 'exclusion-removable' shows block on left and close on right
   size?: 'md' | 'sm'; // 'md' is 32px (h-8), 'sm' is also 32px but with smaller padding
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
   rightIcon?: React.ReactNode;
 }
@@ -20,10 +20,11 @@ export const Chip: React.FC<ChipProps> = ({
   className,
   rightIcon
 }) => {
-  const iconSize = size === 'sm' ? '16px' : '22px';
+  const iconSize = size === 'sm' ? '16px' : '16px';
 
   return (
     <button
+      type="button"
       onClick={onClick}
       className={cn(
         'inline-flex items-center justify-center gap-1 rounded-full transition-colors',
@@ -39,8 +40,21 @@ export const Chip: React.FC<ChipProps> = ({
           {selected ? 'done' : 'add'}
         </span>
       )}
+      {variant === 'exclusion' && (
+        <span className="material-icons" style={{ fontSize: iconSize }}>
+          {selected ? 'block' : 'add'}
+        </span>
+      )}
+      {variant === 'exclusion-removable' && (
+        <span className="material-icons" style={{ fontSize: iconSize }}>
+          block
+        </span>
+      )}
       <span className="text-sm font-medium leading-[1.4]">{label}</span>
       {variant === 'removable' && (
+        <span className="material-icons" style={{ fontSize: iconSize }}>close</span>
+      )}
+      {variant === 'exclusion-removable' && (
         <span className="material-icons" style={{ fontSize: iconSize }}>close</span>
       )}
       {variant === 'dropdown' && (

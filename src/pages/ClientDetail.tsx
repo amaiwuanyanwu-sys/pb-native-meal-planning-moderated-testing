@@ -1,122 +1,203 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { LeftSideRail } from '@/components/layout/LeftSideRail';
-import { RightSideRail } from '@/components/layout/RightSideRail';
+import { ClientLeftRail } from '@/components/clients/ClientLeftRail';
 import { Button } from '@/components/ui/Button';
 import { Tabs } from '@/components/ui/Tabs';
-import { TemplateCard } from '@/components/nutrition-plans/TemplateCard';
 import { Tag } from '@/components/ui/Tag';
+import { EmptyStateCard } from '@/components/nutrition-plans/EmptyStateCard';
+import { TemplateCard } from '@/components/nutrition-plans/TemplateCard';
 import { loadPlans } from '@/data/mockNutritionPlans';
 import type { NutritionPlan } from '@/data/mockNutritionPlans';
 import { mockUsers } from '@/data/mockUsers';
 import { mockRecipes } from '@/data/mockRecipes';
+import { NutritionIcon } from '@/components/icons/NutritionIcon';
 
-const NutritionPlanView: React.FC = () => {
-  const { planId } = useParams<{ planId: string }>();
+const browsableTemplates = [
+  {
+    id: 1,
+    title: 'Lung Health Support Program',
+    duration: '7 days',
+    recipeCount: 22,
+    imageUrls: [
+      '/src/assets/Recipe Images/coconut-turmeric-cauliflower-bowls.jpg',
+      '/src/assets/Recipe Images/sweet-dijon-garden-salad.jpg',
+      '/src/assets/Recipe Images/steamed-broccoli.jpg',
+      '/src/assets/Recipe Images/tart-cherry-limeade.jpg'
+    ]
+  },
+  {
+    id: 2,
+    title: 'Plant Based GLP-1 Support Diet',
+    duration: '7 days',
+    recipeCount: 22,
+    imageUrls: [
+      '/src/assets/Recipe Images/mediterranean-roasted-tomato-chickpea-bowl.jpg',
+      '/src/assets/Recipe Images/lentil-feta-tabbouleh.jpg',
+      '/src/assets/Recipe Images/overnight-oats-with-berries-walnuts.jpg',
+      '/src/assets/Recipe Images/hummus-toast-with-avocado.jpg'
+    ]
+  },
+  {
+    id: 3,
+    title: 'GLP-1 Support Diet',
+    duration: '7 days',
+    recipeCount: 22,
+    imageUrls: [
+      '/src/assets/Recipe Images/grilled-bruschetta-chicken.jpg',
+      '/src/assets/Recipe Images/mediterranean-turkey-rice-bowl.jpg',
+      '/src/assets/Recipe Images/salmon-cucumber-bites.jpg',
+      '/src/assets/Recipe Images/greek-yogurt-almonds-cherries.jpg'
+    ]
+  }
+];
+
+const ClientDetail: React.FC = () => {
+  const { clientId } = useParams<{ clientId: string }>();
   const navigate = useNavigate();
   const [plan, setPlan] = useState<NutritionPlan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'meal-plans' | 'recipe-collection'>('overview');
-  const [isRightRailCollapsed, setIsRightRailCollapsed] = useState(true);
 
-  // Recent items for the left sidebar - load from localStorage
-  // Must be before early returns to satisfy Rules of Hooks
-  const recentItems = React.useMemo(() => {
-    const plans = loadPlans();
+  const client = mockUsers.find(u => u.id === clientId);
 
-    // Sort by most recently updated and take top 5
-    return [...plans]
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-      .slice(0, 5)
-      .map(p => {
-        const user = mockUsers.find(u => u.id === p.clientId);
-        const label = p.type === 'client'
-          ? (user ? `${user.name}'s Nutrition Plan` : 'Nutrition Plan')
-          : (p.templateName || 'Untitled Template');
-
-        return {
-          id: p.id,
-          label,
-          path: `/nutrition/plans/${p.id}`,
-          type: p.type,
-          ...(p.type === 'client' && user ? {
-            avatarInitials: user.initials,
-            avatarBgColor: user.avatarColor,
-          } : {}),
-          ...(p.type === 'template' ? {
-            templateIconBgColor: '#CFF6DC',
-            templateIconColor: '#007820',
-          } : {}),
-        };
-      });
-  }, [planId]); // Recalculate when planId changes
-
-  // Load the plan data
+  // Load plan for this specific client
   useEffect(() => {
-    const plans = loadPlans();
-    const foundPlan = plans.find(p => p.id === planId);
-
-    if (!foundPlan) {
-      // If plan not found, redirect to nutrition plans page
-      navigate('/nutrition', { replace: true });
-      return;
-    }
-
-    // If it's a client plan, redirect to the client detail page
-    if (foundPlan.type === 'client' && foundPlan.clientId) {
-      navigate(`/clients/${foundPlan.clientId}`, { replace: true });
-      return;
-    }
-
-    // It's a template plan, load it
-    setPlan(foundPlan);
+    const allPlans = loadPlans();
+    const clientPlan = allPlans.find(p => p.type === 'client' && p.clientId === clientId);
+    setPlan(clientPlan || null);
     setIsLoading(false);
-  }, [planId, navigate]);
+  }, [clientId]);
 
-  const handleRecentItemClick = (item: { id: string; label: string; path: string }) => {
-    navigate(item.path);
-  };
-
-  // If plan hasn't loaded yet or is being redirected, don't render anything
-  if (isLoading || !plan) {
-    return null;
+  if (!client) {
+    return (
+      <div className="flex h-screen bg-[#F8F9F9]">
+        <Sidebar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-[#244348] mb-2">Client not found</h2>
+            <Button onClick={() => navigate('/clients')} variant="secondary">
+              Back to Clients
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  // Determine plan title based on plan type
-  const planTitle = plan.type === 'client'
-    ? (() => {
-        const user = mockUsers.find(u => u.id === plan.clientId);
-        return user ? `${user.name}'s Nutrition Plan` : 'Nutrition Plan';
-      })()
-    : (plan.templateName || 'Untitled Template');
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-[#F0F2F3] items-center justify-center">
+        <p className="text-sm text-[#657A7E]">Loading...</p>
+      </div>
+    );
+  }
 
+  // If no plan exists, show empty state
+  if (!plan) {
+    return (
+      <div className="flex h-screen bg-[#F8F9F9]">
+        <Sidebar />
+        <ClientLeftRail clientId={clientId!} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Client Info Bar */}
+          <div className="bg-[#F0F2F3] border-b border-[#DFE3E4] flex items-center justify-center px-6 py-2">
+            <div className="flex items-center gap-2">
+              <div
+                className="size-[24px] rounded-full flex items-center justify-center"
+                style={{ backgroundColor: client.avatarColor }}
+              >
+                <span className="text-[12px] font-semibold text-white">
+                  {client.initials}
+                </span>
+              </div>
+              <p className="text-sm font-semibold text-[#244348]">{client.name}</p>
+            </div>
+          </div>
+
+          <main className="flex-1 overflow-y-auto">
+            <div className="mx-auto p-8" style={{ maxWidth: '976px' }}>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex flex-1 items-center gap-2">
+                  <div className="w-8 h-8">
+                    <NutritionIcon className="text-[#385459] w-full h-full" />
+                  </div>
+                  <h1 className="text-2xl font-bold text-gray-900">Nutrition Plan</h1>
+                </div>
+              </div>
+
+              <div className="mb-8">
+                <EmptyStateCard clientId={clientId} />
+              </div>
+
+              <div className="bg-white rounded-lg border border-[#C1C9CB] overflow-hidden">
+                <div className="bg-white border-b border-[#DFE3E4] px-4 py-2 h-14 flex items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="material-icons text-[#244348] text-2xl">dashboard</span>
+                    <h2 className="text-sm font-semibold text-[#244348]">
+                      Browse our templates
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="bg-white p-4 grid grid-cols-3 gap-4">
+                  {browsableTemplates.map((template) => (
+                    <TemplateCard
+                      key={template.id}
+                      title={template.title}
+                      duration={template.duration}
+                      recipeCount={template.recipeCount}
+                      imageUrls={template.imageUrls}
+                    />
+                  ))}
+                </div>
+
+                <button className="bg-[#F0F2F3] border-t border-[#C1C9CB] w-full flex items-center justify-center py-2.5 px-4 hover:bg-[#DFE3E4] transition-colors">
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm font-semibold text-[#385459] leading-[1.4]">View more templates</span>
+                    <span className="material-icons text-[#385459] text-xl">keyboard_arrow_right</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  // Client has a plan - show the plan content
+  const recipes = mockRecipes.filter(recipe => plan.recipeIds.includes(recipe.id));
+  const planTitle = 'Nutrition Plan';
   const isPrivate = true;
 
-  // Load actual recipes from the plan's recipeIds
-  const recipes = mockRecipes.filter(recipe => plan.recipeIds.includes(recipe.id));
-
-  // Get exclusions from the plan
-  const allergens = plan.exclusions.allergens;
-  const customExclusionDescription = plan.exclusions.customDescription;
+  const handleBackToClients = () => {
+    navigate('/clients');
+  };
 
   return (
-    <div className="flex h-screen bg-[#F0F2F3]">
-      {/* Sidebar */}
+    <div className="flex h-screen bg-[#F8F9F9]">
       <Sidebar />
+      <ClientLeftRail clientId={clientId!} />
 
-      {/* Left Side Rail */}
-      <LeftSideRail
-        recentItems={recentItems}
-        onRecentItemClick={handleRecentItemClick}
-      />
-
-      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Page Content */}
+        {/* Client Info Bar */}
+        <div className="bg-[#F0F2F3] border-b border-[#DFE3E4] flex items-center justify-center px-6 py-2">
+          <div className="flex items-center gap-2">
+            <div
+              className="size-[24px] rounded-full flex items-center justify-center"
+              style={{ backgroundColor: client.avatarColor }}
+            >
+              <span className="text-[12px] font-semibold text-white">
+                {client.initials}
+              </span>
+            </div>
+            <p className="text-sm font-semibold text-[#244348]">{client.name}</p>
+          </div>
+        </div>
+
         <main className="flex-1 overflow-y-auto p-8 overflow-x-hidden">
           <div className="mx-auto" style={{ maxWidth: '976px' }}>
-            {/* Header */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -143,13 +224,6 @@ const NutritionPlanView: React.FC = () => {
                     Add
                   </Button>
                   <Button
-                    variant="secondary"
-                    size="md"
-                    onClick={() => setIsRightRailCollapsed(false)}
-                  >
-                    Preferences
-                  </Button>
-                  <Button
                     variant="primary"
                     size="md"
                     icon={<span className="material-icons text-xl">share</span>}
@@ -159,7 +233,6 @@ const NutritionPlanView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Tabs */}
               <Tabs
                 tabs={[
                   { id: 'overview', label: 'Overview' },
@@ -173,9 +246,7 @@ const NutritionPlanView: React.FC = () => {
 
             {activeTab === 'overview' && (
               <div className="space-y-4">
-                {/* Recent meal plans section */}
                 <div className="bg-white rounded-lg border border-[#DFE3E4] overflow-hidden">
-                  {/* Widget Header */}
                   <div className="bg-white border-b border-[#DFE3E4] h-14 px-4 flex items-center">
                     <div className="flex items-center gap-2">
                       <span className="material-icons text-[#657A7E] text-2xl">grid_view</span>
@@ -185,7 +256,6 @@ const NutritionPlanView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Widget Body */}
                   <div className="bg-white p-4 grid grid-cols-[repeat(auto-fill,240px)] gap-3">
                     <TemplateCard
                       size="sm"
@@ -194,16 +264,13 @@ const NutritionPlanView: React.FC = () => {
                       recipeCount={recipes.length}
                       imageUrls={recipes.slice(0, 4).map(r => r.image).filter((img): img is string => !!img)}
                       tag="Draft"
-                      onClick={() => navigate(`/nutrition/plans/${planId}/meal-plans/week-1`, { state: { plan } })}
+                      onClick={() => navigate(`/nutrition/plans/${plan.id}/meal-plans/week-1`, { state: { plan } })}
                     />
                   </div>
                 </div>
 
-                {/* Two Column Layout - Recipe collection and Additional resources */}
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Recipe collection section */}
                   <div className="bg-white rounded-lg border border-[#DFE3E4] overflow-hidden">
-                    {/* Widget Header */}
                     <div className="bg-white border-b border-[#DFE3E4] h-14 px-4 flex items-center">
                       <div className="flex items-center gap-2">
                         <span className="material-icons text-[#657A7E] text-2xl">restaurant</span>
@@ -216,7 +283,6 @@ const NutritionPlanView: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Widget Body - Recipe Grid */}
                     <div className="bg-white p-4">
                       {recipes.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12">
@@ -241,18 +307,9 @@ const NutritionPlanView: React.FC = () => {
                         </div>
                       )}
                     </div>
-
-                    {/* Widget Footer */}
-                    <button className="bg-[#F0F2F3] border-t border-[#DFE3E4] w-full flex items-center justify-center py-2.5 px-4 hover:bg-[#DFE3E4] transition-colors rounded-b-lg">
-                      <div className="flex items-center">
-                        <span className="text-sm font-semibold text-[#385459] leading-[1.4]">View all recipes</span>
-                      </div>
-                    </button>
                   </div>
 
-                  {/* Additional resources section */}
                   <div className="bg-white rounded-lg border border-[#DFE3E4] overflow-hidden">
-                    {/* Widget Header */}
                     <div className="bg-white border-b border-[#DFE3E4] h-14 px-4 flex items-center">
                       <div className="flex items-center gap-2">
                         <span className="material-icons text-[#657A7E] text-2xl">description</span>
@@ -262,9 +319,10 @@ const NutritionPlanView: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Widget Body - Empty State */}
-                    <div className="bg-white p-12 flex flex-col items-center justify-center min-h-75">
-                      <p className="text-sm text-[#657A7E]">No resources added</p>
+                    <div className="bg-white p-4">
+                      <div className="flex flex-col items-center justify-center py-12">
+                        <p className="text-sm text-[#657A7E]">No resources added</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -272,29 +330,21 @@ const NutritionPlanView: React.FC = () => {
             )}
 
             {activeTab === 'meal-plans' && (
-              <div className="mt-6">
-                <p className="text-sm text-[#657A7E]">Meal plans tab content coming soon...</p>
+              <div className="text-center py-12">
+                <p className="text-sm text-[#657A7E]">Meal plans view</p>
               </div>
             )}
 
             {activeTab === 'recipe-collection' && (
-              <div className="mt-6">
-                <p className="text-sm text-[#657A7E]">Recipe collection tab content coming soon...</p>
+              <div className="text-center py-12">
+                <p className="text-sm text-[#657A7E]">Recipe collection view</p>
               </div>
             )}
           </div>
         </main>
       </div>
-
-      {/* Right Side Rail */}
-      <RightSideRail
-        defaultTab="preferences"
-        plan={plan}
-        defaultCollapsed={isRightRailCollapsed}
-        hideRecipesTab={true}
-      />
     </div>
   );
 };
 
-export default NutritionPlanView;
+export default ClientDetail;

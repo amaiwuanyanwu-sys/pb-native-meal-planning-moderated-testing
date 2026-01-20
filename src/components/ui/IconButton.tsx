@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   icon: React.ReactNode;
   tooltip?: string;
@@ -20,11 +20,12 @@ export const IconButton: React.FC<IconButtonProps> = ({
 }) => {
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
 
-  const baseStyles = 'inline-flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none relative';
+  const baseStyles = 'inline-flex items-center justify-center transition-colors focus:outline-none disabled:opacity-50 disabled:pointer-events-none relative';
 
   const variants = {
     primary: 'bg-[#01272E] text-white hover:bg-[#385459] focus:ring-[#01272E]',
     secondary: 'bg-white border border-[#01272E] text-[#01272E] hover:bg-[#F0F2F3] focus:ring-[#01272E]',
+    outline: 'bg-transparent border border-[#C1C9CB] text-[#385459] hover:bg-[#F0F2F3] focus:ring-[#01272E]',
     ghost: 'bg-transparent hover:bg-[#F0F2F3] text-[#01272E]'
   };
 

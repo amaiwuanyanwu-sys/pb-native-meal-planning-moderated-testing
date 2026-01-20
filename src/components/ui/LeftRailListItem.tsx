@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface LeftRailListItemProps {
   label: string;
@@ -16,37 +17,23 @@ export const LeftRailListItem: React.FC<LeftRailListItemProps> = ({
   return (
     <div
       onClick={onClick}
-      style={{
-        padding: '8px 16px',
-        background: isActive ? '#01272e' : 'transparent',
-        color: isActive ? 'white' : '#244348',
-        fontWeight: isActive ? 600 : 500,
-        fontSize: '14px',
-        lineHeight: 1.4,
-        width: '100%',
-        textAlign: 'left',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        transition: 'all 0.2s',
-        fontFamily: 'inherit',
-        cursor: onClick ? 'pointer' : 'default'
-      }}
+      className={cn(
+        'px-4 py-2 w-full text-left flex items-center gap-2 transition-all',
+        isActive ? 'bg-[#01272E] text-white font-semibold' : 'bg-transparent text-[#244348] font-medium',
+        onClick && 'cursor-pointer hover:bg-[#F0F2F3]',
+        isActive && onClick && 'hover:bg-[#01272E]'
+      )}
     >
       {icon && (
-        <span style={{ flexShrink: 0, color: isActive ? 'white' : '#657a7e', display: 'flex', alignItems: 'center' }}>
+        <span className={cn(
+          'shrink-0 flex items-center',
+          isActive ? 'text-white' : 'text-[#657A7E]'
+        )}>
           {icon}
         </span>
       )}
-      <span style={{
-        height: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap'
-      }}>
-        {label}
+      <span className="flex-1 min-w-0 h-6 flex items-center text-sm leading-[1.4]">
+        <span className="truncate">{label}</span>
       </span>
     </div>
   );

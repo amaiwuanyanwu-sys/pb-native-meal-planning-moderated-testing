@@ -55,8 +55,8 @@ export const LeftSideRail: React.FC<LeftSideRailProps> = ({
   const menuItems = [
     { label: 'Nutrition Plans', icon: <NutritionIcon />, path: '/nutrition', disabled: false },
     { label: 'Recipes', icon: <MdOutlineRestaurant size={24} />, path: '/nutrition/recipes', disabled: true },
-    { label: 'Supplements', icon: <MdOutlineMedication size={24} />, path: '/nutrition/supplements', disabled: true },
-    { label: 'Food Database', icon: <MdOutlineShoppingCart size={24} />, path: '/nutrition/food-database', disabled: true }
+    // { label: 'Supplements', icon: <MdOutlineMedication size={24} />, path: '/nutrition/supplements', disabled: true },
+    // { label: 'Food Database', icon: <MdOutlineShoppingCart size={24} />, path: '/nutrition/food-database', disabled: true }
   ];
 
   const isMenuItemActive = (path: string) => {

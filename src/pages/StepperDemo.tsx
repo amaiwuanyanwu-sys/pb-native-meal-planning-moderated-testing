@@ -41,7 +41,7 @@ const StepperDemo: React.FC = () => {
     {
       id: 'food-preferences',
       label: 'Food preferences',
-      description: 'Dietary preferences & cooking effort',
+      description: '',
       icon: <PreferencesIcon color={getIconColor(0)} />,
       status: getStepStatus(0),
       isLocked: isStepLocked(0),
@@ -50,7 +50,7 @@ const StepperDemo: React.FC = () => {
     {
       id: 'allergens-exclusions',
       label: 'Allergens & Exclusions',
-      description: 'Food allergies & dietary restrictions',
+      description: '',
       icon: <span className="material-icons-outlined" style={{ fontSize: '20px', color: getIconColor(1) }}>no_food</span>,
       status: getStepStatus(1),
       isLocked: isStepLocked(1),
@@ -59,7 +59,7 @@ const StepperDemo: React.FC = () => {
     {
       id: 'choose-recipes',
       label: 'Choose recipes',
-      description: 'Select recipes for your plan',
+      description: '',
       icon: <RecipesIcon color={getIconColor(2)} />,
       status: getStepStatus(2),
       isLocked: isStepLocked(2),
@@ -67,8 +67,8 @@ const StepperDemo: React.FC = () => {
     },
     {
       id: 'finalize-plan',
-      label: 'Finalize plan',
-      description: 'Review and finalize your nutrition plan',
+      label: 'Customize plan',
+      description: '',
       icon: <span className="material-icons" style={{ fontSize: '20px', color: getIconColor(3) }}>grid_on</span>,
       status: getStepStatus(3),
       isLocked: isStepLocked(3),

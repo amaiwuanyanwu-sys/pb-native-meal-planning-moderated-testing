@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { LeftSideRail } from '@/components/layout/LeftSideRail';
 import { Tabs } from '@/components/ui/Tabs';
@@ -12,12 +12,7 @@ import { TemplateCard } from '@/components/nutrition-plans/TemplateCard';
 import { loadPlans, deletePlan } from '@/data/mockNutritionPlans';
 import type { NutritionPlan } from '@/data/mockNutritionPlans';
 import { mockUsers } from '@/data/mockUsers';
-
-const NutritionIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M26.6674 13.3334C25.7534 11.7736 24.2735 10.6261 22.5352 10.1294C20.7968 9.63281 18.9340 9.82523 17.3340 10.6667V4.00005H14.6674V10.6667C13.0674 9.82523 11.2045 9.63281 9.46623 10.1294C7.72796 10.6261 6.24796 11.7736 5.33398 13.3334C2.66732 17.3334 9.33398 29.3334 12.0007 29.3334C14.6673 29.3334 14.6673 28.0001 16.0007 28.0001C17.334 28.0001 17.334 29.3334 20.0007 29.3334C22.6673 29.3334 29.334 17.3334 26.6674 13.3334ZM24.334 17.8401C23.5074 21.1334 21.8807 24.16 19.6007 26.6667C19.334 26.6667 19.0273 26.5334 18.8007 26.3334C18.0081 25.6927 17.0198 25.343 16.0007 25.343C14.9815 25.343 13.9932 25.6927 13.2007 26.3334C12.974 26.5334 12.6673 26.6667 12.4007 26.6667C10.1159 24.1674 8.48919 21.1385 7.66732 17.8534C7.33398 16.8801 7.26732 15.8267 7.54732 14.8267C7.92686 14.1501 8.47509 13.5832 9.13865 13.1814C9.80222 12.7795 10.5586 12.5562 11.334 12.5334C12.0807 12.5467 12.814 12.72 13.4807 13.0534L14.6674 13.6534H17.334L18.5207 13.0534C19.1873 12.72 19.9207 12.5467 20.6673 12.5334C22.2407 12.5734 23.6807 13.4401 24.454 14.8134C24.734 15.8134 24.6673 16.8667 24.334 17.8401ZM14.6674 6.66672C7.17398 10.76 5.48065 5.04005 5.48065 5.04005C5.48065 5.04005 9.02732 0.253384 14.6674 6.66672Z" fill="currentColor" />
-  </svg>
-);
+import { NutritionIcon } from '@/components/icons/NutritionIcon';
 
 const CalendarIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
@@ -125,51 +120,65 @@ interface RecentItem {
 
 const NutritionPlans: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
-  const [activeTab, setActiveTab] = useState('client-plans');
+  const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterValue, setFilterValue] = useState('all');
 
-  // Load saved plans from localStorage
-  const [savedPlans, setSavedPlans] = useState<NutritionPlan[]>([]);
+  // Load saved plans from localStorage - initialize synchronously to prevent flicker
+  const [savedPlans, setSavedPlans] = useState<NutritionPlan[]>(() => loadPlans());
 
   // Function to load plans (can be called on mount and after delete)
   const refreshPlans = () => {
     const plans = loadPlans();
     setSavedPlans(plans);
 
-    // Populate recent items with the most recently updated plans (up to 5)
-    const recentPlans = [...plans]
+    // Populate recent items with only templates (up to 5) - exclude client plans
+    const recentTemplates = [...plans]
+      .filter(plan => plan.type === 'template' && !plan.clientId)
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, 5)
       .map(plan => {
-        const user = mockUsers.find(u => u.id === plan.clientId);
-        const label = plan.type === 'client'
-          ? (user ? `${user.name}'s Nutrition Plan` : 'Nutrition Plan')
-          : (plan.templateName || 'Untitled Template');
-
         return {
           id: plan.id,
-          label,
+          label: plan.templateName || 'Untitled Template',
           path: `/nutrition/plans/${plan.id}`,
           type: plan.type,
-          ...(plan.type === 'client' && user ? {
-            avatarInitials: user.initials,
-            avatarBgColor: user.avatarColor,
-          } : {}),
-          ...(plan.type === 'template' ? {
-            templateIconBgColor: '#CFF6DC',
-            templateIconColor: '#007820',
-          } : {}),
+          templateIconBgColor: '#CFF6DC',
+          templateIconColor: '#007820',
         };
       });
 
-    setRecentItems(recentPlans);
+    setRecentItems(recentTemplates);
   };
 
+  // Initialize recent items on mount
   useEffect(() => {
-    refreshPlans();
+    const plans = savedPlans;
+    const recentTemplates = [...plans]
+      .filter(plan => plan.type === 'template' && !plan.clientId)
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .slice(0, 5)
+      .map(plan => {
+        return {
+          id: plan.id,
+          label: plan.templateName || 'Untitled Template',
+          path: `/nutrition/plans/${plan.id}`,
+          type: plan.type,
+          templateIconBgColor: '#CFF6DC',
+          templateIconColor: '#007820',
+        };
+      });
+    setRecentItems(recentTemplates);
   }, []);
+
+  // Refresh plans when navigating back to this page
+  useEffect(() => {
+    if (location.pathname === '/nutrition') {
+      refreshPlans();
+    }
+  }, [location.pathname]);
 
   // Check if user has created any plans
   const hasPlans = savedPlans.length > 0;
@@ -214,7 +223,7 @@ const NutritionPlans: React.FC = () => {
     });
 
   const handleRecentItemClick = (item: RecentItem) => {
-    console.log('Recent item clicked:', item);
+    navigate(item.path);
   };
 
   const handleDeletePlan = (planId: string) => {
@@ -223,11 +232,18 @@ const NutritionPlans: React.FC = () => {
   };
 
   const tabs = [
+    { id: 'all', label: 'All' },
     { id: 'client-plans', label: 'Client plans' },
     { id: 'templates', label: 'Templates' },
   ];
 
-  const filterOptions = activeTab === 'client-plans'
+  const filterOptions = activeTab === 'all'
+    ? [
+      { value: 'all', label: 'All plans' },
+      { value: 'client-plans', label: 'Client plans' },
+      { value: 'templates', label: 'Templates' },
+    ]
+    : activeTab === 'client-plans'
     ? [
       { value: 'all', label: 'All plans' },
       { value: 'recent', label: 'Shared plans' },
@@ -240,7 +256,7 @@ const NutritionPlans: React.FC = () => {
     ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-[#F8F9F9]">
       {/* Sidebar */}
       <Sidebar />
 
@@ -258,13 +274,16 @@ const NutritionPlans: React.FC = () => {
             {/* Page Header */}
             <div className="flex items-center gap-3 mb-6">
               <div className="flex flex-1 items-center gap-2">
-                <div className="w-8 h-8">
-                  <NutritionIcon className="text-[#385459] w-full h-full" />
-                </div>
-                <h1 className="text-2xl font-bold text-gray-900">Nutrition Plans</h1>
+                <NutritionIcon className="text-[#385459]" size={32} />
+                <h1 className="text-2xl font-semibold text-[#01272E]">Nutrition Plans</h1>
               </div>
 
-              {!!hasPlans && <Button icon={<span className="material-icons text-2xl">add</span>} variant="primary" size="md">
+              {!!hasPlans && <Button
+                icon={<span className="material-icons text-2xl">add</span>}
+                variant="primary"
+                size="md"
+                onClick={() => navigate('/wizard/step-1')}
+              >
                 New nutrition plan
               </Button>}
 
@@ -342,7 +361,52 @@ const NutritionPlans: React.FC = () => {
 
                   {/* Plans List */}
                   <div className="border border-[#DFE3E4] rounded overflow-hidden">
-                    {activeTab === 'client-plans' ? (
+                    {activeTab === 'all' ? (
+                      // Show both client plans and templates
+                      clientPlans.length > 0 || templates.length > 0 ? (
+                        <>
+                          {clientPlans.map((plan) => (
+                            <PlanListItem
+                              key={plan.id}
+                              type="client"
+                              title={plan.title}
+                              metadata={plan.metadata}
+                              avatarType={plan.avatarType}
+                              avatarInitials={plan.avatarInitials}
+                              avatarSrc={plan.avatarSrc}
+                              avatarBgColor={plan.avatarBgColor}
+                              status={plan.status}
+                              onClick={() => navigate(`/nutrition/plans/${plan.id}`)}
+                              onDelete={() => handleDeletePlan(plan.id)}
+                            />
+                          ))}
+                          {templates.map((plan) => (
+                            <PlanListItem
+                              key={plan.id}
+                              type="template"
+                              title={plan.title}
+                              metadata={plan.metadata}
+                              templateIconBgColor={plan.templateIconBgColor}
+                              templateIconColor={plan.templateIconColor}
+                              status={plan.status}
+                              author={plan.author}
+                              onClick={() => navigate(`/nutrition/plans/${plan.id}`)}
+                              onDelete={() => handleDeletePlan(plan.id)}
+                            />
+                          ))}
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-12 px-6">
+                          <div className="flex flex-col items-center gap-2 max-w-sm text-center">
+                            <span className="material-icons text-[#96A5A8] text-5xl mb-2">folder_open</span>
+                            <h3 className="text-base font-semibold text-[#244348]">No plans yet</h3>
+                            <p className="text-sm font-medium text-[#657A7E]">
+                              Create your first nutrition plan to get started
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    ) : activeTab === 'client-plans' ? (
                       clientPlans.length > 0 ? (
                         clientPlans.map((plan) => (
                           <PlanListItem

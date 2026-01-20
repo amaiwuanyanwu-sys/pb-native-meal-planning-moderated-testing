@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface TooltipProps {
   content: string;
   children: React.ReactNode;
-  position?: 'left' | 'right';
+  position?: 'left' | 'right' | 'top';
 }
 
 export const Tooltip: React.FC<TooltipProps> = ({ content, children, position = 'right' }) => {
@@ -15,8 +16,8 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children, position = 
     if (isVisible && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       setTooltipPosition({
-        top: rect.top + rect.height / 2,
-        left: position === 'right' ? rect.right + 8 : rect.left - 8
+        top: position === 'top' ? rect.top - 8 : rect.top + rect.height / 2,
+        left: position === 'top' ? rect.left + rect.width / 2 : (position === 'right' ? rect.right + 8 : rect.left - 8)
       });
     }
   }, [isVisible, position]);
@@ -31,14 +32,14 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children, position = 
       >
         {children}
       </div>
-      {isVisible && (
+      {isVisible && createPortal(
         <div
           style={{
             position: 'fixed',
-            left: position === 'right' ? tooltipPosition.left : 'auto',
+            left: position === 'top' ? tooltipPosition.left : (position === 'right' ? tooltipPosition.left : 'auto'),
             right: position === 'left' ? `calc(100vw - ${tooltipPosition.left}px)` : 'auto',
             top: tooltipPosition.top,
-            transform: 'translateY(-50%)',
+            transform: position === 'top' ? 'translate(-50%, -100%)' : 'translateY(-50%)',
             padding: '4px 8px',
             background: '#244348',
             color: 'white',
@@ -53,20 +54,28 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children, position = 
           <div
             style={{
               position: 'absolute',
-              ...(position === 'right' ? { right: '100%' } : { left: '100%' }),
-              top: '50%',
-              transform: 'translateY(-50%)',
+              ...(position === 'top'
+                ? { top: '100%', left: '50%', transform: 'translateX(-50%)' }
+                : position === 'right'
+                  ? { right: '100%', top: '50%', transform: 'translateY(-50%)' }
+                  : { left: '100%', top: '50%', transform: 'translateY(-50%)' }
+              ),
               width: 0,
               height: 0,
-              borderTop: '4px solid transparent',
-              borderBottom: '4px solid transparent',
+              ...(position === 'top'
+                ? { borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '4px solid #244348' }
+                : { borderTop: '4px solid transparent', borderBottom: '4px solid transparent' }
+              ),
               ...(position === 'right'
                 ? { borderRight: '4px solid #244348' }
-                : { borderLeft: '4px solid #244348' }
+                : position === 'left'
+                  ? { borderLeft: '4px solid #244348' }
+                  : {}
               )
             }}
           />
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
