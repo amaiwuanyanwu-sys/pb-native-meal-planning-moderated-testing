@@ -139,11 +139,11 @@ export const MealPlannerRecipeCard: React.FC<MealPlannerRecipeCardProps> = ({
                 </div>
               )}
               {!mainIsLeftover && mainHasBulk && mainPortion > 1 && (
-                <div className="absolute bg-[#E4C2F0] bottom-0 left-0 flex items-center gap-0.5 px-1.5 py-1 rounded-tr z-5">
+                <div className="absolute bg-[#E4C2F0] bottom-0 left-0 flex items-center gap-1 px-1.5 py-1 rounded-tr z-5">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M3 8H21V17C21 17.8333 20.7083 18.5417 20.125 19.125C19.5417 19.7083 18.8333 20 18 20H6C5.16667 20 4.45833 19.7083 3.875 19.125C3.29167 18.5417 3 17.8333 3 17V8ZM5 10V17C5 17.2833 5.09583 17.5208 5.2875 17.7125C5.47917 17.9042 5.71667 18 6 18H18C18.2833 18 18.5208 17.9042 18.7125 17.7125C18.9042 17.5208 19 17.2833 19 17V10H5ZM3 7V5H9V4C9 3.71667 9.09583 3.47917 9.2875 3.2875C9.47917 3.09583 9.71667 3 10 3H14C14.2833 3 14.5208 3.09583 14.7125 3.2875C14.9042 3.47917 15 3.71667 15 4V5H21V7H3Z" fill="#244348"/>
                   </svg>
-                  <span className="text-xs font-semibold text-[#244348] leading-none">×{mainPortion}</span>
+                  <span className="text-xs font-semibold text-[#244348] leading-none">{mainPortion}</span>
                 </div>
               )}
               <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-5 flex gap-1">
@@ -211,11 +211,11 @@ export const MealPlannerRecipeCard: React.FC<MealPlannerRecipeCardProps> = ({
                   </div>
                 )}
                 {!sideIsLeftover && sideHasBulk && sidePortion > 1 && (
-                  <div className="absolute bg-[#E4C2F0] bottom-0 left-0 flex items-center gap-0.5 px-1.5 py-1 rounded-tr z-5">
+                  <div className="absolute bg-[#E4C2F0] bottom-0 left-0 flex items-center gap-1 px-1.5 py-1 rounded-tr z-5">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path d="M3 8H21V17C21 17.8333 20.7083 18.5417 20.125 19.125C19.5417 19.7083 18.8333 20 18 20H6C5.16667 20 4.45833 19.7083 3.875 19.125C3.29167 18.5417 3 17.8333 3 17V8ZM5 10V17C5 17.2833 5.09583 17.5208 5.2875 17.7125C5.47917 17.9042 5.71667 18 6 18H18C18.2833 18 18.5208 17.9042 18.7125 17.7125C18.9042 17.5208 19 17.2833 19 17V10H5ZM3 7V5H9V4C9 3.71667 9.09583 3.47917 9.2875 3.2875C9.47917 3.09583 9.71667 3 10 3H14C14.2833 3 14.5208 3.09583 14.7125 3.2875C14.9042 3.47917 15 3.71667 15 4V5H21V7H3Z" fill="#244348"/>
                     </svg>
-                    <span className="text-xs font-semibold text-[#244348] leading-none">×{sidePortion}</span>
+                    <span className="text-xs font-semibold text-[#244348] leading-none">{sidePortion}</span>
                   </div>
                 )}
                 <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-5 flex gap-1">
