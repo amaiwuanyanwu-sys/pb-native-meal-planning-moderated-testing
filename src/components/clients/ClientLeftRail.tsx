@@ -99,11 +99,25 @@ export const ClientLeftRail: React.FC<ClientLeftRailProps> = ({
         </div>
       )}
 
+      {/* Back button for collapsed state */}
+      {isCollapsed && client && (
+        <Tooltip content="Back to all clients">
+          <div
+            className="py-2 border-b border-[#dfe3e4] w-full flex items-center justify-center cursor-pointer hover:bg-[#F8F9F9] transition-colors"
+            onClick={() => navigate('/clients')}
+          >
+            <span className="material-icons text-[#657a7e]">arrow_back</span>
+          </div>
+        </Tooltip>
+      )}
+
       {/* Menu Items Section */}
       <div className="flex-1 overflow-y-auto flex flex-col">
-        <div className="px-4 text-xs font-semibold text-[#244348] pt-4 pb-2 ">
-          Client details
-        </div>
+        {!isCollapsed && (
+          <div className="px-4 text-xs font-semibold text-[#244348] pt-4 pb-2 ">
+            Client details
+          </div>
+        )}
 
         {menuItems.slice(0, 12).map((item) => (
           isCollapsed ? (
