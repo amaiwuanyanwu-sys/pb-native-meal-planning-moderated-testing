@@ -250,13 +250,9 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
                   </button>
                 </div>
 
-                {/* Leftovers Section */}
+                {/* Leftovers Section - without heading */}
                 {leftovers.size > 0 && (
                   <>
-                    <div className="flex items-center gap-2 pt-2">
-                      <span className="text-xs font-semibold text-[#657A7E] leading-[1.5] uppercase">Leftovers</span>
-                      <div className="flex-1 h-px bg-[#DFE3E4]" />
-                    </div>
                     {Array.from(leftovers.entries()).map(([recipeId, data]) => {
                       const recipe = mockRecipes.find(r => r.id === recipeId);
                       if (!recipe) return null;
