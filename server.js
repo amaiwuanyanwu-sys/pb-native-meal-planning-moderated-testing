@@ -225,18 +225,26 @@ OTHER CRITICAL RULES:
    - Do NOT add extra sides to combination recipes
    - Mix standalone and combination recipes naturally
 
-5. Return ONLY valid JSON (no text before or after):
+5. Bulk cooking and leftovers:
+   - When creating multiple portions of the same recipe, use the "portion" field
+   - Set "portion" to the number of portions being cooked (e.g., 3 means cooking 3 portions at once)
+   - Set "hasLeftover" to true if portion > 1 to enable leftover tracking
+   - The system will automatically distribute leftovers to future meals
+   - Example: Cook 3 portions on day 1 breakfast, then use leftovers on day 2 and day 3
+
+6. Return ONLY valid JSON (no text before or after):
 {
   "meals": [
-    {"day": 1, "mealTime": "breakfast", "recipeTitle": "Exact Recipe Title"},
+    {"day": 1, "mealTime": "breakfast", "recipeTitle": "Exact Recipe Title", "portion": 3, "serving": 1, "hasLeftover": true},
+    {"day": 2, "mealTime": "breakfast", "recipeTitle": "Exact Recipe Title", "isFromLeftover": true},
     {"day": 1, "mealTime": "lunch", "recipeTitle": "Exact Recipe Title"}
   ],
   "summary": "High-level description only. No recipe names or meal details."
 }
 
-6. Use EXACT recipe titles from the available list
-7. Match ALL preferences and exclusions
-8. NEVER say you can't do something - just do the closest valid alternative
+7. Use EXACT recipe titles from the available list
+8. Match ALL preferences and exclusions
+9. NEVER say you can't do something - just do the closest valid alternative
 
 Generate NOW. Return ONLY JSON.`;
     } else {

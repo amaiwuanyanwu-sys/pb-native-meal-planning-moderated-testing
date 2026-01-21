@@ -504,7 +504,7 @@ const MealPlanView: React.FC = () => {
     setPreviewMeals(meals);
   }, [plan]);
 
-  const handleApplyMealPlan = useCallback((meals: Array<{ day: number; mealTime: string; recipeId: number }>) => {
+  const handleApplyMealPlan = useCallback((meals: Array<{ day: number; mealTime: string; recipeId: number; portion?: number; serving?: number; hasLeftover?: boolean; isFromLeftover?: boolean }>) => {
     if (!plan) return;
 
     const updatedPlan = { ...plan };
@@ -514,37 +514,62 @@ const MealPlanView: React.FC = () => {
       updatedPlan.mealPlan.meals = [];
     }
 
+    // Track new leftovers from bulk cooking
+    const newLeftovers = new Map(leftovers);
+
     // Apply each meal to the planner
     meals.forEach(meal => {
       const existingMealIndex = updatedPlan.mealPlan.meals!.findIndex(
         m => m.day === meal.day && m.mealTime === meal.mealTime
       );
 
+      const portion = meal.portion || 1;
+      const serving = meal.serving || 1;
+      const hasLeftover = meal.hasLeftover || false;
+      const isFromLeftover = meal.isFromLeftover || false;
+
       if (existingMealIndex >= 0) {
         // Update existing meal
         updatedPlan.mealPlan.meals![existingMealIndex] = {
           ...updatedPlan.mealPlan.meals![existingMealIndex],
-          recipeId: meal.recipeId
+          recipeId: meal.recipeId,
+          mainPortion: portion,
+          mainServing: serving,
+          mainIsLeftover: hasLeftover,
+          mainIsFromLeftover: isFromLeftover,
         };
       } else {
         // Add new meal
         updatedPlan.mealPlan.meals!.push({
           day: meal.day,
           mealTime: meal.mealTime as 'breakfast' | 'snack' | 'lunch' | 'dinner',
-          recipeId: meal.recipeId
+          recipeId: meal.recipeId,
+          mainPortion: portion,
+          mainServing: serving,
+          mainIsLeftover: hasLeftover,
+          mainIsFromLeftover: isFromLeftover,
+        });
+      }
+
+      // Add to leftovers if bulk cooking (portion > 1 and hasLeftover is true)
+      if (hasLeftover && portion > 1 && !isFromLeftover) {
+        newLeftovers.set(meal.recipeId, {
+          portions: portion - 1,
+          serving: serving
         });
       }
     });
 
     // Update the plan state once with all changes
     setPlan(updatedPlan);
+    setLeftovers(newLeftovers);
 
     // Clear preview state in next tick to ensure plan update has been processed
     setTimeout(() => {
       setPreviewMeals(null);
       setPlanBeforePreview(null);
     }, 0);
-  }, [plan, setPlan]);
+  }, [plan, setPlan, leftovers]);
 
   const handleDiscardPreview = useCallback(() => {
     console.log('🗑️ Discard clicked');

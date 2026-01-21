@@ -53,7 +53,8 @@ export const IconButton: React.FC<IconButtonProps> = ({
 
       {tooltip && isTooltipVisible && (
         <div className={cn(
-          "absolute px-2 py-1 bg-[#244348] text-white text-xs rounded whitespace-nowrap z-50 pointer-events-none",
+          "absolute px-2 py-1 bg-[#244348] text-white text-xs rounded whitespace-nowrap pointer-events-none",
+          "z-[9999]",
           tooltipPosition === 'top' && "left-1/2 -translate-x-1/2 bottom-full mb-2",
           tooltipPosition === 'bottom' && "left-1/2 -translate-x-1/2 top-full mt-2",
           tooltipPosition === 'left' && "right-full top-1/2 -translate-y-1/2 mr-2",

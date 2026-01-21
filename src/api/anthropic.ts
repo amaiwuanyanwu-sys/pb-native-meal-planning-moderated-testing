@@ -18,6 +18,10 @@ export interface SuggestedMeal {
   mealTime: 'breakfast' | 'snack' | 'lunch' | 'dinner';
   recipeTitle: string;
   recipeId?: number;
+  portion?: number;
+  serving?: number;
+  hasLeftover?: boolean;
+  isFromLeftover?: boolean;
 }
 
 export interface AssistantResponse {

@@ -113,11 +113,7 @@ export const ClientLeftRail: React.FC<ClientLeftRailProps> = ({
 
       {/* Menu Items Section */}
       <div className="flex-1 overflow-y-auto flex flex-col">
-        {!isCollapsed && (
-          <div className="px-4 text-xs font-semibold text-[#244348] pt-4 pb-2 ">
-            Client details
-          </div>
-        )}
+        
 
         {menuItems.slice(0, 12).map((item) => (
           isCollapsed ? (
@@ -165,6 +161,26 @@ export const ClientLeftRail: React.FC<ClientLeftRailProps> = ({
                 Nutrition Plan
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Nutrition Plan - Collapsed State */}
+        {isCollapsed && (
+          <div style={{ width: '100%' }}>
+            <Tooltip content="Nutrition Plan">
+              <div
+                onClick={() => navigate(`/clients/${clientId}`)}
+                className="py-2 w-full flex items-center justify-center transition-all bg-[#01272e] cursor-pointer hover:bg-[#01272e]"
+              >
+                <span style={{
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <NutritionIcon size={24} />
+                </span>
+              </div>
+            </Tooltip>
           </div>
         )}
 
