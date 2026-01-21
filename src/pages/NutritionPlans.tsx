@@ -238,23 +238,11 @@ const NutritionPlans: React.FC = () => {
     { id: 'templates', label: 'Templates' },
   ];
 
-  const filterOptions = activeTab === 'all'
-    ? [
-      { value: 'all', label: 'All plans' },
-      { value: 'client-plans', label: 'Client plans' },
-      { value: 'templates', label: 'Templates' },
-    ]
-    : activeTab === 'client-plans'
-    ? [
-      { value: 'all', label: 'All plans' },
-      { value: 'recent', label: 'Shared plans' },
-      { value: 'archived', label: 'Private plans' },
-    ]
-    : [
-      { value: 'all', label: 'All templates' },
-      { value: 'my-templates', label: 'My templates' },
-      { value: 'shared', label: 'Shared templates' },
-    ];
+  const filterOptions = [
+    { value: 'all', label: 'All plans' },
+    { value: 'private', label: 'Private plans' },
+    { value: 'shared', label: 'Shared plans' },
+  ];
 
   return (
     <div className="flex h-screen bg-[#F8F9F9]">

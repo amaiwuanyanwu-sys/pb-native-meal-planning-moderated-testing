@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { ClientLeftRail } from '@/components/clients/ClientLeftRail';
+import { RightSideRail } from '@/components/layout/RightSideRail';
 import { Button } from '@/components/ui/Button';
 import { Tabs } from '@/components/ui/Tabs';
 import { Tag } from '@/components/ui/Tag';
@@ -59,6 +60,8 @@ const ClientDetail: React.FC = () => {
   const [plan, setPlan] = useState<NutritionPlan | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'meal-plans' | 'recipe-collection'>('overview');
+  const [isRightRailCollapsed, setIsRightRailCollapsed] = useState(true);
+  const [rightRailTab, setRightRailTab] = useState<'recipes' | 'preferences' | 'assistant'>('preferences');
 
   const client = mockUsers.find(u => u.id === clientId);
 
@@ -221,6 +224,16 @@ const ClientDetail: React.FC = () => {
                     Add
                   </Button>
                   <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={() => {
+                      setIsRightRailCollapsed(false);
+                      setRightRailTab('preferences');
+                    }}
+                  >
+                    Preferences
+                  </Button>
+                  <Button
                     variant="primary"
                     size="md"
                     icon={<span className="material-icons text-xl">share</span>}
@@ -340,6 +353,17 @@ const ClientDetail: React.FC = () => {
           </div>
         </main>
       </div>
+
+      {/* Right Side Rail */}
+      <RightSideRail
+        defaultTab={rightRailTab}
+        plan={plan}
+        defaultCollapsed={isRightRailCollapsed}
+        hideRecipesTab={true}
+        hideGeneralSection={true}
+        onCollapsedChange={setIsRightRailCollapsed}
+        onTabChange={setRightRailTab}
+      />
     </div>
   );
 };

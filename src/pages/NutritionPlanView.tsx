@@ -19,35 +19,26 @@ const NutritionPlanView: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'meal-plans' | 'recipe-collection'>('overview');
   const [isRightRailCollapsed, setIsRightRailCollapsed] = useState(true);
+  const [rightRailTab, setRightRailTab] = useState<'recipes' | 'preferences' | 'assistant'>('preferences');
 
   // Recent items for the left sidebar - load from localStorage
   // Must be before early returns to satisfy Rules of Hooks
   const recentItems = React.useMemo(() => {
     const plans = loadPlans();
 
-    // Sort by most recently updated and take top 5
+    // Filter to show only templates (exclude client plans), sort by most recently updated and take top 5
     return [...plans]
+      .filter(p => p.type === 'template' && !p.clientId)
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, 5)
       .map(p => {
-        const user = mockUsers.find(u => u.id === p.clientId);
-        const label = p.type === 'client'
-          ? (user ? `${user.name}'s Nutrition Plan` : 'Nutrition Plan')
-          : (p.templateName || 'Untitled Template');
-
         return {
           id: p.id,
-          label,
+          label: p.templateName || 'Untitled Template',
           path: `/nutrition/plans/${p.id}`,
           type: p.type,
-          ...(p.type === 'client' && user ? {
-            avatarInitials: user.initials,
-            avatarBgColor: user.avatarColor,
-          } : {}),
-          ...(p.type === 'template' ? {
-            templateIconBgColor: '#CFF6DC',
-            templateIconColor: '#007820',
-          } : {}),
+          templateIconBgColor: '#CFF6DC',
+          templateIconColor: '#007820',
         };
       });
   }, [planId]); // Recalculate when planId changes
@@ -141,7 +132,10 @@ const NutritionPlanView: React.FC = () => {
                   <Button
                     variant="secondary"
                     size="md"
-                    onClick={() => setIsRightRailCollapsed(false)}
+                    onClick={() => {
+                      setIsRightRailCollapsed(false);
+                      setRightRailTab('preferences');
+                    }}
                   >
                     Preferences
                   </Button>
@@ -284,10 +278,12 @@ const NutritionPlanView: React.FC = () => {
 
       {/* Right Side Rail */}
       <RightSideRail
-        defaultTab="preferences"
+        defaultTab={rightRailTab}
         plan={plan}
         defaultCollapsed={isRightRailCollapsed}
         hideRecipesTab={true}
+        onCollapsedChange={setIsRightRailCollapsed}
+        onTabChange={setRightRailTab}
       />
     </div>
   );

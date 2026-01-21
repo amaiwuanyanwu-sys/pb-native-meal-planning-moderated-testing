@@ -15,11 +15,13 @@ interface RightSideRailProps {
   defaultTab?: 'recipes' | 'preferences' | 'assistant';
   plan?: NutritionPlan | null;
   leftovers?: Map<number, { portions: number; serving: number }>;
-  onPreviewMealPlan?: (meals: Array<{ day: number; mealTime: string; recipeId: number }>) => void;
-  onApplyMealPlan?: (meals: Array<{ day: number; mealTime: string; recipeId: number }>) => void;
+  onPreviewMealPlan?: (meals: Array<{ day: number; mealTime: string; recipeId: number; portion?: number; serving?: number; hasLeftover?: boolean; isFromLeftover?: boolean }>) => void;
+  onApplyMealPlan?: (meals: Array<{ day: number; mealTime: string; recipeId: number; portion?: number; serving?: number; hasLeftover?: boolean; isFromLeftover?: boolean }>) => void;
   onDiscardPreview?: () => void;
   hideRecipesTab?: boolean;
   hideGeneralSection?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
+  onTabChange?: (tab: 'recipes' | 'preferences' | 'assistant') => void;
 }
 
 export const RightSideRail: React.FC<RightSideRailProps> = ({
@@ -32,10 +34,22 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
   onApplyMealPlan,
   onDiscardPreview,
   hideRecipesTab = false,
-  hideGeneralSection = false
+  hideGeneralSection = false,
+  onCollapsedChange,
+  onTabChange
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const [activeTab, setActiveTab] = useState<'recipes' | 'preferences' | 'assistant'>(defaultTab);
+
+  // Update collapsed state when defaultCollapsed changes
+  React.useEffect(() => {
+    setIsCollapsed(defaultCollapsed);
+  }, [defaultCollapsed]);
+
+  // Update active tab when defaultTab changes
+  React.useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
   const [searchValue, setSearchValue] = useState('');
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
   const [inputValue, setInputValue] = useState('');
@@ -78,7 +92,31 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
   });
 
   const handleToggleCollapse = () => {
-    setIsCollapsed(!isCollapsed);
+    const newCollapsed = !isCollapsed;
+    setIsCollapsed(newCollapsed);
+    if (onCollapsedChange) {
+      onCollapsedChange(newCollapsed);
+    }
+  };
+
+  const handleTabChange = (tab: 'recipes' | 'preferences' | 'assistant') => {
+    setActiveTab(tab);
+    if (onTabChange) {
+      onTabChange(tab);
+    }
+  };
+
+  const handleSectionClick = (section: 'preferences' | 'assistant') => {
+    if (isCollapsed) {
+      setIsCollapsed(false);
+      if (onCollapsedChange) {
+        onCollapsedChange(false);
+      }
+    }
+    setActiveTab(section);
+    if (onTabChange) {
+      onTabChange(section);
+    }
   };
 
   const handleSendMessage = () => {
@@ -121,6 +159,10 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
           day: m.day,
           mealTime: m.mealTime,
           recipeId: m.recipeId!,
+          portion: m.portion,
+          serving: m.serving,
+          hasLeftover: m.hasLeftover,
+          isFromLeftover: m.isFromLeftover,
         }));
       onPreviewMealPlan(mealsToPreview);
     }
@@ -136,6 +178,10 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
           day: m.day,
           mealTime: m.mealTime,
           recipeId: m.recipeId!,
+          portion: m.portion,
+          serving: m.serving,
+          hasLeftover: m.hasLeftover,
+          isFromLeftover: m.isFromLeftover,
         }));
       console.log('Applying meals:', mealsToApply);
       onApplyMealPlan(mealsToApply);
@@ -178,7 +224,7 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
           <div className="border-b border-[#C1C9CB] flex items-center w-full">
             {!hideRecipesTab && (
               <button
-                onClick={() => setActiveTab('recipes')}
+                onClick={() => handleTabChange('recipes')}
                 className={cn(
                   'flex-1 flex flex-col items-center justify-center px-4 py-0 h-11 min-w-[80px]',
                   'relative'
@@ -196,7 +242,7 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
               </button>
             )}
             <button
-              onClick={() => setActiveTab('preferences')}
+              onClick={() => handleTabChange('preferences')}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center px-4 py-0 h-11 min-w-[80px]',
                 'relative'
@@ -213,7 +259,7 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
               )}
             </button>
             <button
-              onClick={() => setActiveTab('assistant')}
+              onClick={() => handleTabChange('assistant')}
               className={cn(
                 'flex-1 flex flex-col items-center justify-center px-4 py-0 h-11 min-w-[80px]',
                 'relative'
@@ -333,7 +379,7 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
                   <div className="flex flex-col w-full">
                     <div className="bg-white flex h-10 items-center justify-between pl-4 pr-0">
                       <div className="flex gap-2 items-center">
-                        <span className="material-icons text-xl text-[#657A7E]">info</span>
+                        <span className="material-icons-outlined text-xl text-[#657A7E]">info</span>
                         <span className="text-sm font-semibold text-[#385459] leading-[1.4]">General</span>
                       </div>
                       <button className="flex items-center justify-center p-2 w-10 rounded hover:bg-[#F0F2F3]">
@@ -366,8 +412,8 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
                 <div className="border-b border-[#DFE3E4] flex flex-col overflow-hidden w-full">
                   <div className="bg-white flex h-10 items-center justify-between pl-4 pr-0">
                     <div className="flex gap-2 items-center">
-                      <span className="material-icons text-xl text-[#657A7E]">adjust</span>
-                      <span className="text-sm font-semibold text-[#385459] leading-[1.4]">Nutrition</span>
+                      <span className="material-icons-outlined text-xl text-[#657A7E]">adjust</span>
+                      <span className="text-sm font-semibold text-[#385459] leading-[1.4]">Nutrition targets</span>
                     </div>
                     <div className="flex items-center justify-end">
                       <span className="bg-[#F2F8FB] border border-[#007CB2] rounded-full px-2 py-0.5 text-xs font-medium text-[#007CB2] leading-[1.5]">
@@ -484,7 +530,7 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
                 <div className="border-b border-[#DFE3E4] flex flex-col overflow-hidden w-full">
                   <div className="bg-white flex h-10 items-center justify-between pl-4 pr-0">
                     <div className="flex gap-2 items-center">
-                      <span className="material-icons text-xl text-[#657A7E]">restaurant</span>
+                      <span className="material-icons-outlined text-xl text-[#657A7E]">restaurant</span>
                       <span className="text-sm font-semibold text-[#385459] leading-[1.4]">Food preferences</span>
                     </div>
                     <div className="flex items-center justify-end">
@@ -502,7 +548,7 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
                 <div className="border-b border-[#DFE3E4] flex flex-col overflow-hidden w-full">
                   <div className="bg-white flex h-10 items-center justify-between pl-4 pr-0">
                     <div className="flex gap-2 items-center">
-                      <span className="material-icons text-xl text-[#657A7E]">no_meals</span>
+                      <span className="material-icons-outlined text-xl text-[#657A7E]">no_food</span>
                       <span className="text-sm font-semibold text-[#385459] leading-[1.4]">Exclusions</span>
                     </div>
                     <div className="flex items-center justify-end">
@@ -704,25 +750,55 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
       )}
 
       {isCollapsed && (
-        <div className="flex-1 bg-white flex flex-col items-center w-14">
-          <button className="flex items-center justify-center px-6 py-2 w-full">
-            <span className="material-icons text-xl text-[#657A7E]">info</span>
-          </button>
-          <button className="flex items-center justify-center px-6 py-2 w-full">
-            <span className="material-icons text-xl text-[#657A7E]">adjust</span>
-          </button>
-          <button className="flex items-center justify-center px-6 py-2 w-full">
-            <span className="material-icons text-xl text-[#657A7E]">restaurant</span>
-          </button>
-          <button className="flex items-center justify-center px-6 py-2 w-full">
-            <span className="material-icons text-xl text-[#657A7E]">no_meals</span>
-          </button>
+        <div className="flex-1 bg-white flex flex-col items-center w-14 gap-1">
+          <IconButton
+            variant="ghost"
+            size="md"
+            icon={<span className="material-icons-outlined text-xl text-[#657A7E]">info</span>}
+            tooltip="General"
+            tooltipPosition="left"
+            onClick={() => handleSectionClick('preferences')}
+            className="w-full"
+          />
+          <IconButton
+            variant="ghost"
+            size="md"
+            icon={<span className="material-icons-outlined text-xl text-[#657A7E]">adjust</span>}
+            tooltip="Nutrition targets"
+            tooltipPosition="left"
+            onClick={() => handleSectionClick('preferences')}
+            className="w-full"
+          />
+          <IconButton
+            variant="ghost"
+            size="md"
+            icon={<span className="material-icons-outlined text-xl text-[#657A7E]">restaurant</span>}
+            tooltip="Food preferences"
+            tooltipPosition="left"
+            onClick={() => handleSectionClick('preferences')}
+            className="w-full"
+          />
+          <IconButton
+            variant="ghost"
+            size="md"
+            icon={<span className="material-icons-outlined text-xl text-[#657A7E]">no_food</span>}
+            tooltip="Exclusions"
+            tooltipPosition="left"
+            onClick={() => handleSectionClick('preferences')}
+            className="w-full"
+          />
           <div className="h-2 w-9.5 my-1">
             <div className="h-px bg-[#DFE3E4]" />
           </div>
-          <button className="flex items-center justify-center px-6 py-2 w-full">
-            <span className="material-icons text-xl text-[#657A7E]">auto_awesome</span>
-          </button>
+          <IconButton
+            variant="ghost"
+            size="md"
+            icon={<span className="material-icons text-xl text-[#657A7E]">auto_awesome</span>}
+            tooltip="Assistant"
+            tooltipPosition="left"
+            onClick={() => handleSectionClick('assistant')}
+            className="w-full"
+          />
         </div>
       )}
     </aside>
