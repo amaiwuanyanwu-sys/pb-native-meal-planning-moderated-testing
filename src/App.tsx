@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
 import Plans from './pages/Plans'
 import Planner from './pages/Planner'
 import NutritionPlans from './pages/NutritionPlans'
@@ -13,10 +14,13 @@ import Step4FinalizePlan from './pages/wizard/Step4FinalizePlan'
 import StepperDemo from './pages/StepperDemo'
 
 function App() {
+  // Use basename only in production (GitHub Pages), not in development
+  const basename = import.meta.env.PROD ? '/pb-native-meal-planning-moderated-testing' : '';
+
   return (
-    <Router basename="/pb-native-meal-planning-moderated-testing">
+    <Router basename={basename}>
       <Routes>
-        <Route path="/" element={<Navigate to="/nutrition" replace />} />
+        <Route path="/" element={<Home />} />
         <Route path="/nutrition" element={<NutritionPlans />} />
         <Route path="/nutrition/plans/:planId" element={<NutritionPlanView />} />
         <Route path="/nutrition/plans/:planId/meal-plans/:mealPlanId" element={<MealPlanView />} />
