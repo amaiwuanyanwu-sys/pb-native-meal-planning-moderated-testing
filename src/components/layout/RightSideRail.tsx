@@ -143,6 +143,35 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
     }
   };
 
+  // Determine if meal plan is empty or filled
+  const isMealPlanEmpty = React.useMemo(() => {
+    if (!plan?.mealPlan.meals || plan.mealPlan.meals.length === 0) {
+      return true;
+    }
+    // Check if any meals have recipes assigned
+    const hasAnyRecipes = plan.mealPlan.meals.some(meal => meal.recipeId !== null);
+    return !hasAnyRecipes;
+  }, [plan]);
+
+  // Get contextual tips based on meal plan state
+  const contextualTips = React.useMemo(() => {
+    if (isMealPlanEmpty) {
+      // Tips for empty meal plans - focus on creation
+      return [
+        'Create a 7 day meal plan with 5 recipes',
+        'Generate a week of high protein meals',
+        'Make a 3 day vegetarian meal plan'
+      ];
+    } else {
+      // Tips for filled meal plans - focus on editing/optimization
+      return [
+        'Swap lunch recipes for more variety',
+        'Add breakfast options to my plan',
+        'Replace high calorie meals with lighter options'
+      ];
+    }
+  }, [isMealPlanEmpty]);
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -597,18 +626,18 @@ export const RightSideRail: React.FC<RightSideRailProps> = ({
                       </div>
                     </div>
 
-                    {/* Try Section */}
+                    {/* Try Section - Contextual tips based on meal plan state */}
                     <p className="text-xs font-semibold text-[#657A7E] leading-[1.5]">Try</p>
                     <div className="flex flex-col gap-2 text-xs font-medium text-[#385459] leading-[1.5]">
-                      <button onClick={() => handleExampleClick('Create a 7 day meal plan with 5 recipes')} className="text-left">
-                        Create a 7 day meal plan with 5 recipes
-                      </button>
-                      <button onClick={() => handleExampleClick('Make a 3 day vegetarian meal')} className="text-left">
-                        Make a 3 day vegetarian meal
-                      </button>
-                      <button onClick={() => handleExampleClick('Generate a week of high protein meals')} className="text-left">
-                        Generate a week of high protein meals
-                      </button>
+                      {contextualTips.map((tip, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleExampleClick(tip)}
+                          className="text-left hover:text-[#01272E] transition-colors"
+                        >
+                          {tip}
+                        </button>
+                      ))}
                     </div>
                   </>
                 )}
