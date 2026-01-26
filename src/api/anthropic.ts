@@ -1,4 +1,5 @@
 import type { NutritionPlan } from '../data/mockNutritionPlans';
+import { generateMealPlan } from '../data/mockNutritionPlans';
 import type { Recipe } from '../components/nutrition-plans/RecipeDetailsPopover';
 
 export interface Message {
@@ -30,77 +31,207 @@ export interface AssistantResponse {
   suggestedMeals?: SuggestedMeal[];
 }
 
-const API_URL = 'http://localhost:3001';
+// Helper function to determine if a message is a task or question
+function classifyMessage(message: string): ResponseType {
+  const taskKeywords = ['create', 'add', 'swap', 'replace', 'generate', 'fill', 'remove', 'change', 'make', 'update', 'delete'];
+  const questionKeywords = ['what', 'which', 'how many', 'tell me', 'show me', 'list'];
 
-export async function summarizeText(
-  text: string,
-  maxLength: number = 100
-): Promise<string> {
-  try {
-    const response = await fetch(`${API_URL}/api/summarize`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        text,
-        maxLength,
-      }),
-    });
+  const lowerMessage = message.toLowerCase();
 
-    if (!response.ok) {
-      throw new Error('Failed to summarize text');
-    }
+  // Check for task keywords
+  const hasTaskKeyword = taskKeywords.some(keyword => lowerMessage.includes(keyword));
+  const hasQuestionKeyword = questionKeywords.some(keyword => lowerMessage.includes(keyword));
 
-    const data = await response.json();
-    return data.summary;
-  } catch (error) {
-    console.error('Summarize error:', error);
-    // Fallback to truncating the text
-    return text.substring(0, maxLength);
+  // If it has task keywords and no question keywords, it's a task
+  if (hasTaskKeyword && !hasQuestionKeyword) {
+    return 'task';
   }
+
+  // If it has question keywords, it's a question
+  if (hasQuestionKeyword) {
+    return 'question';
+  }
+
+  // Default to task if unclear
+  return 'task';
 }
 
+// Helper function to parse meal plan request parameters
+function parseMealPlanRequest(message: string): { days: number } {
+  const lowerMessage = message.toLowerCase();
+
+  // Extract number of days
+  let days = 5; // default
+  const dayMatch = lowerMessage.match(/(\d+)\s*day/);
+  if (dayMatch) {
+    days = Math.min(parseInt(dayMatch[1]), 7); // Max 7 days
+  } else if (lowerMessage.includes('week')) {
+    days = 7;
+  }
+
+  return { days };
+}
+
+// Helper function to answer questions about the meal plan
+function answerQuestion(message: string, context: AssistantContext): string {
+  const lowerMessage = message.toLowerCase();
+  const { plan, availableRecipes } = context;
+
+  if (!plan) {
+    return "No meal plan is currently loaded. Please create a meal plan first.";
+  }
+
+  const meals = plan.mealPlan.meals || [];
+  const mealsWithRecipes = meals.filter(m => m.recipeId);
+
+  // Count recipes
+  if (lowerMessage.includes('how many') && lowerMessage.includes('recipe')) {
+    const uniqueRecipes = new Set(mealsWithRecipes.map(m => m.recipeId));
+    return `There are ${uniqueRecipes.size} unique recipes in your meal plan across ${mealsWithRecipes.length} meals.`;
+  }
+
+  // Most used recipe
+  if (lowerMessage.includes('most used') || lowerMessage.includes('most common')) {
+    const recipeCounts = new Map<number, number>();
+    mealsWithRecipes.forEach(m => {
+      const count = recipeCounts.get(m.recipeId!) || 0;
+      recipeCounts.set(m.recipeId!, count + 1);
+    });
+
+    let mostUsedId = 0;
+    let maxCount = 0;
+    recipeCounts.forEach((count, id) => {
+      if (count > maxCount) {
+        maxCount = count;
+        mostUsedId = id;
+      }
+    });
+
+    const recipe = availableRecipes.find(r => r.id === mostUsedId);
+    if (recipe) {
+      return `"${recipe.title}" is used most frequently, appearing ${maxCount} times in your meal plan.`;
+    }
+  }
+
+  // Specific day query
+  const dayMatch = lowerMessage.match(/day\s*(\d+)/);
+  if (dayMatch) {
+    const day = parseInt(dayMatch[1]);
+    const dayMeals = meals.filter(m => m.day === day && m.recipeId);
+    if (dayMeals.length > 0) {
+      const mealDescriptions = dayMeals.map(m => {
+        const recipe = availableRecipes.find(r => r.id === m.recipeId);
+        return `${m.mealTime}: ${recipe?.title || 'Unknown'}`;
+      });
+      return `Day ${day} has ${dayMeals.length} meals: ${mealDescriptions.join(', ')}.`;
+    }
+    return `Day ${day} has no meals scheduled yet.`;
+  }
+
+  // Nutrition targets
+  if (lowerMessage.includes('nutrition') || lowerMessage.includes('target') || lowerMessage.includes('calorie')) {
+    const targets = plan.mealPlan.nutritionTargets;
+    if (targets) {
+      return `Your daily nutrition targets are ${targets.calories} calories, ${targets.protein}g protein, ${targets.carbs}g carbs, ${targets.fat}g fat, and ${targets.fiber}g fiber.`;
+    }
+    return "No nutrition targets have been set for this meal plan.";
+  }
+
+  // General plan info
+  if (lowerMessage.includes('what') || lowerMessage.includes('tell me')) {
+    const structure = plan.mealPlan.structure || 'structured';
+    const numDays = plan.mealPlan.numberOfDays || 5;
+    return `This is a ${structure} meal plan for ${numDays} days with ${mealsWithRecipes.length} meals scheduled. ${plan.preferences.dietary.length > 0 ? `Dietary preferences: ${plan.preferences.dietary.join(', ')}.` : ''}`;
+  }
+
+  return "I can help you with questions about your meal plan. Try asking about specific days, nutrition targets, or recipe usage.";
+}
+
+// Main function to handle assistant requests
 export async function sendMessage(
   userMessage: string,
   context: AssistantContext
 ): Promise<AssistantResponse> {
   try {
-    const response = await fetch(`${API_URL}/api/assistant`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userMessage,
-        context,
-      }),
+    const messageType = classifyMessage(userMessage);
+
+    if (messageType === 'question') {
+      // Handle questions about the meal plan
+      const answer = answerQuestion(userMessage, context);
+      return {
+        content: answer,
+        type: 'question',
+      };
+    }
+
+    // Handle task requests (meal plan generation)
+    const { plan, availableRecipes } = context;
+
+    if (!plan) {
+      return {
+        content: "Please create a nutrition plan first before generating meals.",
+        type: 'question',
+      };
+    }
+
+    // Parse the request
+    const { days } = parseMealPlanRequest(userMessage);
+
+    // Get available recipe IDs
+    const recipeIds = availableRecipes.map(r => r.id);
+
+    if (recipeIds.length === 0) {
+      return {
+        content: "No recipes available. Please select some recipes first.",
+        type: 'question',
+      };
+    }
+
+    // Generate meal plan using the local algorithm
+    const structure = days === 1 ? 'simple' : 'structured';
+    const nutritionTargets = plan.mealPlan.nutritionTargets;
+
+    const meals = generateMealPlan(recipeIds, structure, nutritionTargets);
+
+    // Limit to requested number of days
+    const filteredMeals = meals.filter(m => m.day <= days);
+
+    // Convert to SuggestedMeal format
+    const suggestedMeals: SuggestedMeal[] = filteredMeals.map(meal => {
+      const recipe = availableRecipes.find(r => r.id === meal.recipeId);
+      return {
+        day: meal.day,
+        mealTime: meal.mealTime,
+        recipeTitle: recipe?.title || 'Unknown Recipe',
+        recipeId: meal.recipeId || undefined,
+        portion: meal.mainPortion,
+        serving: meal.mainServing,
+      };
     });
 
-    if (!response.ok) {
-      let errorMessage = 'Failed to get response from assistant';
-      try {
-        const error = await response.json();
-        errorMessage = error.error || errorMessage;
-      } catch {
-        errorMessage = `Server error: ${response.status} ${response.statusText}`;
-      }
-      throw new Error(errorMessage);
-    }
+    // Generate a summary
+    const uniqueRecipes = new Set(filteredMeals.map(m => m.recipeId));
+    const summary = `Created a ${days}-day meal plan with ${uniqueRecipes.size} recipes. All meals match your preferences.`;
 
-    const data = await response.json();
-
-    // If it's a task response and the summary is too long, re-summarize it
-    if (data.type === 'task' && data.content && data.content.length > 100) {
-      console.log('Summary too long, re-summarizing...');
-      data.content = await summarizeText(data.content, 100);
-    }
-
-    return data;
+    return {
+      content: summary,
+      type: 'task',
+      suggestedMeals,
+    };
   } catch (error) {
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Unable to connect to assistant server. Make sure the server is running on port 3001.');
-    }
-    throw error;
+    console.error('Assistant error:', error);
+    throw new Error('Failed to process your request. Please try again.');
   }
+}
+
+// Deprecated - kept for compatibility but no longer uses external API
+export async function summarizeText(
+  text: string,
+  maxLength: number = 100
+): Promise<string> {
+  // Simple local truncation
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return text.substring(0, maxLength - 3) + '...';
 }
