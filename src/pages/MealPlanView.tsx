@@ -1138,7 +1138,7 @@ const MealPlanView: React.FC = () => {
                 variant={viewMode === 'grid' ? 'primary' : 'secondary'}
                 size="md"
                 icon={<span className="material-icons text-2xl">grid_view</span>}
-                tooltip="Grid view"
+                tooltip="Structured plan"
                 tooltipPosition="bottom"
                 onClick={() => setViewMode('grid')}
                 className="rounded-r-none border-r-0 focus:ring-0 focus:ring-offset-0"
@@ -1147,7 +1147,7 @@ const MealPlanView: React.FC = () => {
                 variant={viewMode === 'kanban' ? 'primary' : 'secondary'}
                 size="md"
                 icon={<span className="material-icons text-2xl">view_kanban</span>}
-                tooltip="Kanban view"
+                tooltip="Simple plan"
                 tooltipPosition="bottom"
                 onClick={() => setViewMode('kanban')}
                 className="rounded-l-none focus:ring-0 focus:ring-offset-0"
