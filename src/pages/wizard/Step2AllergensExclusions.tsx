@@ -174,9 +174,9 @@ const Step2AllergensExclusions: React.FC = () => {
       }
     });
 
-    // Update state and save to localStorage
-    const updatedTags = Array.from(newTags);
-    const updatedAllergens = Array.from(newAllergens);
+    // Update state and save to localStorage - merge with existing selections
+    const updatedTags = Array.from(new Set([...selectedTags, ...newTags]));
+    const updatedAllergens = Array.from(new Set([...selectedAllergens, ...newAllergens]));
 
     setSelectedTags(updatedTags);
     setSelectedAllergens(updatedAllergens);
