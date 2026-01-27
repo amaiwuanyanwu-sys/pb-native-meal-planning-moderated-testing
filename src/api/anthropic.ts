@@ -57,8 +57,20 @@ function classifyMessage(message: string): ResponseType {
 }
 
 // Helper function to parse meal plan request parameters
-function parseMealPlanRequest(message: string): { days: number } {
+function parseMealPlanRequest(message: string): { days: number; isSwap: boolean; targetMealTime?: string } {
   const lowerMessage = message.toLowerCase();
+
+  // Check if this is a swap/replace request
+  const isSwap = lowerMessage.includes('swap') || lowerMessage.includes('replace');
+
+  // Detect target meal time for swap
+  let targetMealTime: string | undefined;
+  if (isSwap) {
+    if (lowerMessage.includes('breakfast')) targetMealTime = 'breakfast';
+    else if (lowerMessage.includes('lunch')) targetMealTime = 'lunch';
+    else if (lowerMessage.includes('dinner')) targetMealTime = 'dinner';
+    else if (lowerMessage.includes('snack')) targetMealTime = 'snack';
+  }
 
   // Extract number of days
   let days = 5; // default
@@ -69,7 +81,7 @@ function parseMealPlanRequest(message: string): { days: number } {
     days = 7;
   }
 
-  return { days };
+  return { days, isSwap, targetMealTime };
 }
 
 // Helper function to answer questions about the meal plan
@@ -175,7 +187,7 @@ export async function sendMessage(
     }
 
     // Parse the request
-    const { days } = parseMealPlanRequest(userMessage);
+    const { days, isSwap, targetMealTime } = parseMealPlanRequest(userMessage);
 
     // Get available recipe IDs
     const recipeIds = availableRecipes.map(r => r.id);
@@ -187,7 +199,61 @@ export async function sendMessage(
       };
     }
 
-    // Generate meal plan using the local algorithm
+    // Handle swap requests differently
+    if (isSwap && targetMealTime && plan.mealPlan.meals) {
+      // Get current meals for the target meal time
+      const currentMeals = plan.mealPlan.meals.filter(m => m.mealTime === targetMealTime && m.recipeId);
+
+      if (currentMeals.length === 0) {
+        return {
+          content: `No ${targetMealTime} meals found to swap.`,
+          type: 'question',
+        };
+      }
+
+      // Get currently used recipe IDs for this meal time
+      const usedRecipeIds = new Set(currentMeals.map(m => m.recipeId));
+
+      // Find alternative recipes that aren't currently used for this meal time
+      const alternativeRecipeIds = recipeIds.filter(id => !usedRecipeIds.has(id));
+
+      if (alternativeRecipeIds.length === 0) {
+        return {
+          content: `All available recipes are already used for ${targetMealTime}. Try adding more recipes first.`,
+          type: 'question',
+        };
+      }
+
+      // Generate new meals for just this meal time
+      const structure = plan.mealPlan.structure || 'structured';
+      const nutritionTargets = plan.mealPlan.nutritionTargets;
+      const newMeals = generateMealPlan(alternativeRecipeIds, structure, nutritionTargets);
+
+      // Filter to only the target meal time and limit to existing days
+      const maxDay = Math.max(...currentMeals.map(m => m.day));
+      const swappedMeals = newMeals.filter(m => m.mealTime === targetMealTime && m.day <= maxDay);
+
+      // Convert to SuggestedMeal format
+      const suggestedMeals: SuggestedMeal[] = swappedMeals.map(meal => {
+        const recipe = availableRecipes.find(r => r.id === meal.recipeId);
+        return {
+          day: meal.day,
+          mealTime: meal.mealTime,
+          recipeTitle: recipe?.title || 'Unknown Recipe',
+          recipeId: meal.recipeId || undefined,
+          portion: meal.mainPortion,
+          serving: meal.mainServing,
+        };
+      });
+
+      return {
+        content: `Swapped ${suggestedMeals.length} ${targetMealTime} recipes with new variety.`,
+        type: 'task',
+        suggestedMeals,
+      };
+    }
+
+    // Generate full meal plan for non-swap requests
     const structure = days === 1 ? 'simple' : 'structured';
     const nutritionTargets = plan.mealPlan.nutritionTargets;
 
