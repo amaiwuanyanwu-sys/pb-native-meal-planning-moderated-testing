@@ -147,7 +147,7 @@ export const CellDetailView: React.FC<CellDetailViewProps> = ({
   };
 
   return (
-    <aside className="bg-white flex flex-col h-screen w-80 border-l border-[#DFE3E4] shadow-[-2px_0px_4px_0px_rgba(1,39,46,0.1)]">
+    <aside className="bg-white flex flex-col fixed top-0 right-0 bottom-0 w-80 border-l border-[#DFE3E4] shadow-[-2px_0px_4px_0px_rgba(1,39,46,0.1)] z-40">
       {/* Header */}
       <div className="border-b border-[#C1C9CB] flex gap-2.5 h-11 items-center px-4 py-2.5 shrink-0">
         <button
