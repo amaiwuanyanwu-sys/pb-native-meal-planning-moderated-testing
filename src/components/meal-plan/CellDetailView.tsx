@@ -169,10 +169,10 @@ export const CellDetailView: React.FC<CellDetailViewProps> = ({
         </div>
 
         {mainRecipe ? (
-          <div className="bg-white border border-[#DFE3E4] rounded-lg overflow-hidden cursor-pointer group/card">
+          <div className="bg-white border border-[#DFE3E4] rounded-lg cursor-pointer group/card">
             {/* Recipe Image */}
             <div
-              className="h-[135px] w-full border-b border-[#DFE3E4] relative overflow-visible"
+              className="h-[135px] w-full border-b border-[#DFE3E4] relative overflow-hidden rounded-t-lg"
               onClick={(e) => {
                 // Only trigger if not clicking on a button
                 if (!(e.target as HTMLElement).closest('button')) {
@@ -420,10 +420,10 @@ export const CellDetailView: React.FC<CellDetailViewProps> = ({
         </div>
 
         {sideRecipe ? (
-          <div className="bg-white border border-[#DFE3E4] rounded-lg overflow-hidden cursor-pointer group/card">
+          <div className="bg-white border border-[#DFE3E4] rounded-lg cursor-pointer group/card">
             {/* Recipe Image */}
             <div
-              className="h-[135px] w-full border-b border-[#DFE3E4] relative overflow-visible"
+              className="h-[135px] w-full border-b border-[#DFE3E4] relative overflow-hidden rounded-t-lg"
               onClick={(e) => {
                 // Only trigger if not clicking on a button
                 if (!(e.target as HTMLElement).closest('button')) {
